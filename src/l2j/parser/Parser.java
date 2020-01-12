@@ -1,0 +1,657 @@
+package l2j.parser;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import l2j.lexer.*;
+import l2j.lexer.token.*;
+import l2j.module.Module;
+import l2j.module.attributes.*;
+import l2j.module.function.*;
+import l2j.module.function.instruction.*;
+import l2j.module.types.*;
+import l2j.module.value.*;
+
+/**
+ * LLVM parser
+ * 
+ * @see http://llvm.org/doxygen/LLParser_8cpp_source.html
+ * @see https://llvm.org/docs/LangRef.html
+ * @author jkim13
+ *
+ */
+public class Parser {
+	private Lexer l;
+
+	public Parser(Lexer l) {
+		this.l = l;
+	}
+
+	private static void keyword(Token t) {
+		if (t.type != TokenType.Keyword)
+			throw new IllegalStateException("Expected keyword, got " + t.type.toString());
+	}
+
+	private static void mustBe(Token t, TokenType k) {
+		if (t.type != k)
+			throw new IllegalStateException("Expected " + k.toString() + ", got " + t.type.toString());
+	}
+
+	private static boolean is(Token t, Keyword k) {
+		if (t.type != TokenType.Keyword)
+			return false;
+		return ((TokenKeyword) t).kwe == k;
+	}
+
+	private static int getInteger(Token t) {
+		if (t.type != TokenType.IntegerConstant)
+			throw new IllegalStateException("Expected integer constant");
+		return ((TokenIntegerConstant) t).value;
+	}
+	private static String getString(Token t) {
+		if (t.type != TokenType.String)
+			throw new IllegalStateException("Expected string constant");
+		return ((TokenString) t).data;
+	}
+
+	/**
+	 * Parse linkage type.
+	 * 
+	 * @param t Token to be examined
+	 * @param f Function to be modified
+	 * @return Next token
+	 */
+	private Token parseOptionalLinkageAux(Token t, Function f) {
+		if (t.type != TokenType.Keyword)
+			return t;
+		switch (((TokenKeyword) t).kwe) {
+		case PRIVATE:
+			f.visibillity = Function.VISIBILITY_PRIVATE;
+			break;
+		case INTERNAL:
+			f.visibillity = Function.VISIBILITY_INTERNAL;
+			break;
+		case AVAILABLE_EXTERNALLY:
+			f.visibillity = Function.VISIBILITY_EXTERNAL;
+			break;
+		case LINKONCE:
+		case WEAK:
+		case COMMON:
+		case APPENDING:
+		case EXTERN_WEAK:
+		case LINKONCE_ODR:
+		case WEAK_ODR:
+		case EXTERNAL:
+			f.visibillity = Function.VISIBILITY_DEFAULT;
+			break;
+		default:
+			f.visibillity = Function.VISIBILITY_DEFAULT;
+			return t;
+		}
+		return l.lex();
+	}
+
+	/**
+	 * Parse DSO local.
+	 * 
+	 * @param t
+	 * @param f
+	 * @return
+	 */
+	private Token parseOptionalDSO(Token t) {
+		if (t.type != TokenType.Keyword)
+			return t;
+		switch (((TokenKeyword) t).kwe) {
+		case DSO_LOCAL:
+		case DSO_PREEMPTABLE:
+			return l.lex();
+		default:
+			return t;
+		}
+	}
+
+	/**
+	 * Parse visibility.
+	 * 
+	 * @param t
+	 * @param f
+	 * @return
+	 */
+	private Token parseOptionalVisibility(Token t) {
+		if (t.type != TokenType.Keyword)
+			return t;
+		switch (((TokenKeyword) t).kwe) {
+		case DEFAULT:
+		case HIDDEN:
+		case PROTECTED:
+			return l.lex();
+		default:
+			return t;
+		}
+	}
+
+	/**
+	 * Parse DLL storage.
+	 * 
+	 * @param t
+	 * @param f
+	 * @return
+	 */
+	private Token parseOptionalDLLStorage(Token t) {
+		if (t.type != TokenType.Keyword)
+			return t;
+		switch (((TokenKeyword) t).kwe) {
+		case DLLIMPORT:
+		case DLLEXPORT:
+			return l.lex();
+		default:
+			return t;
+		}
+	}
+
+	/**
+	 * Parse optional linkage
+	 * 
+	 * @param kw
+	 * @param f
+	 * @return
+	 */
+	private Token parseOptionalLinkage(Token t, Function f) {
+		t = parseOptionalLinkageAux(t, f);
+		t = parseOptionalDSO(t);
+		t = parseOptionalVisibility(t);
+		t = parseOptionalDLLStorage(t);
+		return t;
+	}
+
+	/**
+	 * Parse optional calling convention
+	 * 
+	 * @param t
+	 * @param f
+	 * @return
+	 */
+	private Token parseOptionalCallingConvention(Token t, Function f) {
+		if (t.type != TokenType.Keyword)
+			return t;
+		switch (((TokenKeyword) t).kwe) {
+		case CC:
+			mustBe(l.lex(), TokenType.IntegerConstant);
+			// INTENTIONAL FALLTHROUGH
+		case FASTCC:
+		case INTEL_OCL_BICC:
+		case COLDCC:
+		case X86_STDCALLCC:
+		case X86_FASTCALLCC:
+		case X86_THISCALLCC:
+		case X86_VECTORCALLCC:
+		case ARM_APCSCC:
+		case ARM_AAPCSCC:
+		case ARM_AAPCS_VFPCC:
+		case AARCH64_VECTOR_PCS:
+		case MSP430_INTRCC:
+		case AVR_INTRCC:
+		case AVR_SIGNALCC:
+		case PTX_KERNEL:
+		case PTX_DEVICE:
+		case SPIR_FUNC:
+		case SPIR_KERNEL:
+		case X86_64_SYSVCC:
+		case WIN64CC:
+		case WEBKIT_JSCC:
+		case ANYREGCC:
+		case PRESERVE_MOSTCC:
+		case PRESERVE_ALLCC:
+		case GHCCC:
+		case SWIFTCC:
+		case X86_INTRCC:
+		case HHVMCC:
+		case HHVM_CCC:
+		case CXX_FAST_TLSCC:
+		case AMDGPU_VS:
+		case AMDGPU_LS:
+		case AMDGPU_HS:
+		case AMDGPU_ES:
+		case AMDGPU_GS:
+		case AMDGPU_PS:
+		case AMDGPU_CS:
+		case AMDGPU_KERNEL:
+		case TAILCC:
+			return l.lex();
+		default:
+			return t;
+		}
+	}
+
+	/**
+	 * Parse string attribute
+	 * 
+	 * @param s
+	 * @param add The list to add the parsed attribute
+	 * @return
+	 */
+	private Token parseStringAttribute(TokenString s, ArrayList<Attribute> add) {
+		throw new Error("TODO: String attributes");
+	}
+
+	/**
+	 * Parse alignment
+	 * 
+	 * @param add
+	 */
+	private void parseAlignment(ArrayList<Attribute> add) {
+		Token t = l.lex();
+		mustBe(t, TokenType.IntegerConstant);
+		add.add(new AttributeAlign(((TokenIntegerConstant) t).value));
+	}
+
+	/**
+	 * Parse type
+	 * 
+	 * @param t
+	 * @return
+	 */
+	private Type parseType(Token t) {
+		if (t == null)
+			t = l.lex();
+		Type result = null;
+		switch (t.type) {
+		case Integer:
+			result = new IntegerType(((TokenInteger) t).width);
+		default:
+			break;
+		}
+		if (result == null)
+			return null;
+		while (l.lex().type == TokenType.Star)
+			result = new PointerType(result);
+		l.unlex();
+		return result;
+	}
+
+	/**
+	 * Parse a value, either a constant or a local variable
+	 * 
+	 * @param t
+	 * @return
+	 */
+	private Value parseValue(Token t) {
+		if (t == null)
+			t = l.lex();
+		switch (t.type) {
+		case IntegerConstant:
+			return new ValueConstant(getInteger(t));
+		default:
+			return null;
+		}
+	}
+
+	/**
+	 * Parse byval
+	 * 
+	 * @param add
+	 */
+	private void parseByval(ArrayList<Attribute> add) {
+		Token t = l.lex();
+		if (t.type == TokenType.LParen) {
+			add.add(new AttributeByval(parseType(l.lex())));
+		} else {
+			add.add(new AttributeByval(null));
+		}
+	}
+
+	private static HashMap<Keyword, AttributeType> attrsTable = new HashMap<Keyword, AttributeType>();
+	static {
+		attrsTable.put(Keyword.UWTABLE, AttributeType.Uwtable);
+		attrsTable.put(Keyword.NOUNWIND, AttributeType.Nounwind);
+	};
+
+	/**
+	 * Parse optional function attributes
+	 * 
+	 * @param t
+	 * @param f
+	 * @param ag Whether this is an attribute group listing or not
+	 * @return
+	 */
+	private Token parseOptionalFunctionAttributes(Token t, ArrayList<Attribute> attributess, boolean ag) {
+		while (true) {
+			switch (t.type) {
+			case AttributeGroup:
+				attributess.add(new AttributeGroup(((TokenAttributeGroup) t).id));
+				break;
+			case String: {
+				Token orig = t;
+				t = l.lex();
+				if(t.type == TokenType.Equal) {
+					t = l.lex();
+					mustBe(t, TokenType.String);
+					attributess.add(new AttributeTargetSpecific(getString(orig), getString(t)));
+				}else {
+					attributess.add(new AttributeTargetSpecific(getString(t), null));
+					l.unlex();
+				}
+				break;
+			}
+			case Keyword: {
+				TokenKeyword kw = (TokenKeyword) t;
+				t = l.lex();
+				switch (kw.kwe) {
+				case ALIGN:
+					if (ag) {
+						mustBe(t, TokenType.Equal);
+						t = l.lex();
+					}
+					attributess.add(new AttributeAlign(getInteger(t)));
+					break;
+				default:
+					if (attrsTable.containsKey(kw.kwe)) {
+						attributess.add(new AttributeGeneric(attrsTable.get(kw.kwe)));
+						break;
+					}
+					throw new UnsupportedOperationException("TODO: Attr " + kw.kwe.toString());
+				}
+				break;
+			}
+			default:
+				return t;
+			}
+			t = l.lex();
+		}
+	}
+
+	private Token parseOptionalFunctionAttributes(Token t, Function f) {
+		return parseOptionalFunctionAttributes(t, f.attributess, false);
+	}
+
+	private Token parseOptionalFunctionAttributes(Token t, AttributeList f) {
+		return parseOptionalFunctionAttributes(t, f.arr, true);
+	}
+
+	/**
+	 * Parse optional return attributes
+	 * 
+	 * @param t
+	 * @param f
+	 * @return
+	 */
+	private Token parseOptionalReturnAttributes(Token t, Function f) {
+		out: while (true) {
+			if (t.type == TokenType.String)
+				t = parseStringAttribute((TokenString) t, f.returnAttributes);
+			else {
+				if (t.type != TokenType.Keyword)
+					break;
+				switch (((TokenKeyword) t).kwe) {
+				default:
+					break out;
+				case ALIGN:
+					parseAlignment(f.returnAttributes);
+					break;
+				case BYVAL:
+					parseByval(f.returnAttributes);
+					break;
+				// TODO: Add more
+				}
+			}
+			t = l.lex();
+		}
+		return t;
+	}
+
+	/**
+	 * Parse unnamed_addr attribute. Currently does nothing.
+	 * 
+	 * @param t
+	 * @param f
+	 * @return
+	 */
+	private Token parseOptionalUnnamedAddr(Token t, Function f) {
+		if (t.type != TokenType.Keyword)
+			return t;
+		switch (((TokenKeyword) t).kwe) {
+		case UNNAMED_ADDR:
+		case LOCAL_UNNAMED_ADDR:
+			return l.lex();
+		default:
+			return t;
+		}
+	}
+
+	/**
+	 * Parse instruction
+	 * 
+	 * @param t
+	 * @return
+	 */
+	private Instruction parseInstruction(Token t) {
+		// Check if it's an assignment
+		String destination = null;
+		Instruction i;
+		if (t.type == TokenType.LocalVariable) {
+			destination = ((TokenLocalVariable) t).name;
+			mustBe(l.lex(), TokenType.Equal);
+			t = l.lex();
+		}
+		mustBe(t, TokenType.Instruction);
+		switch (((TokenInstruction) t).kwe) {
+		case RET: {
+			Type type = parseType(null);
+			Value value = parseValue(null);
+
+			return new InstructionRet(type, value);
+		}
+		case STORE: {
+			t = l.lex();
+			boolean atomic = is(t, Keyword.ATOMIC);
+			if (atomic)
+				t = l.lex();
+			boolean isVolatile = is(t, Keyword.VOLATILE);
+			if (isVolatile)
+				t = l.lex();
+			Type type = parseType(t);
+			Value value = parseValue(null);
+			mustBe(l.lex(), TokenType.Comma);
+			System.out.println(l.lex());
+			l.unlex();
+			Type pointerType = parseType(null); // Note: parseType eats pointer asterixes
+			Value pointer = parseValue(null);
+			t = l.lex();
+
+			int align = 0, nontemporal = 0, invariant = 0;
+			while (t.type == TokenType.Comma) {
+				t = l.lex();
+				if (is(t, Keyword.ALIGN)) {
+					align = getInteger(l.lex());
+					t = l.lex();
+					continue;
+				}
+			}
+			l.unlex();
+			return new InstructionStore(atomic, isVolatile, type, value, pointerType, pointer, align, nontemporal,
+					invariant);
+		}
+		case ALLOCA: {
+			t = l.lex();
+			boolean inalloca = is(t, Keyword.INALLOCA);
+			if (inalloca)
+				t = l.lex();
+
+			Type type = parseType(t), numElementsType = null;
+			int numElements = 0, align = 0, addrspace = 0;
+
+			if (type == null)
+				throw new IllegalStateException("Expected type after alloca");
+
+			t = l.lex();
+			while (t.type == TokenType.Comma) {
+				// 1. <type> <NumberElements>
+				// 2. align <number>
+				// 3. addrspace(<number>)
+				t = l.lex();
+				if ((numElementsType = parseType(t)) == null) {
+					// Option 1
+					numElements = getInteger(l.lex());
+					t = l.lex();
+					continue;
+				} else {
+					if (is(t, Keyword.ALIGN)) {
+						align = getInteger(l.lex());
+						t = l.lex();
+						continue;
+					} else if (is(t, Keyword.ADDRSPACE)) {
+						mustBe(l.lex(), TokenType.LParen);
+						addrspace = getInteger(l.lex());
+						mustBe(l.lex(), TokenType.RParen);
+						t = l.lex();
+						continue;
+					}
+				}
+				break;
+			}
+			l.unlex();
+			return new InstructionAlloca(inalloca, type, numElementsType, numElements, align, addrspace);
+		}
+		default:
+			throw new UnsupportedOperationException("Unknown instruction: " + ((TokenInstruction) t).kwe);
+		}
+	}
+
+	/**
+	 * Parse the function body
+	 * 
+	 * @param t
+	 * @param f
+	 * @return
+	 */
+	private Token parseFunctionBody(Token t, Function f) {
+		BasicBlock b = new BasicBlock();
+		while (t.type != TokenType.RBrace) {
+			String name;
+			Instruction i;
+			if (t.type == TokenType.Label) {
+				throw new UnsupportedOperationException("todo: label");
+			} else {
+				name = f.getTempName();
+			}
+			do {
+				i = parseInstruction(t);
+				b.instructions.add(i);
+				t = l.lex();
+			} while (!i.isTerminator());
+			f.blocks.put(name, b);
+		}
+		return t;
+	}
+
+	/**
+	 * Parse a function header, as described by the LLVM specification
+	 * 
+	 * @param t Token
+	 * @param f Function
+	 * @return Next token in stream
+	 */
+	private Token parseFunctionHeader(Token t, Function f) {
+		t = parseOptionalLinkage(t, f);
+		t = parseOptionalCallingConvention(t, f);
+		t = parseOptionalReturnAttributes(t, f);
+
+		f.returnType = parseType(t);
+		t = l.lex();
+		if (t.type != TokenType.GlobalVariable)
+			throw new IllegalStateException("define name must be global variable");
+
+		f.name = ((TokenGlobalVariable) t).name;
+
+		mustBe(l.lex(), TokenType.LParen);
+
+		t = l.lex();
+		while (t.type != TokenType.RParen) {
+			Parameter param = new Parameter();
+			param.type = parseType(t);
+
+			t = l.lex();
+			// TODO: Parse attributes
+
+			t = l.lex();
+			if (t.type == TokenType.LocalVariable) {
+				param.name = ((TokenLocalVariable) t).name;
+			} else {
+				if (t.type == TokenType.Comma)
+					t = l.lex();
+				else if (t.type == TokenType.Keyword)
+					throw new IllegalStateException("TODO: Parse attributes");
+			}
+		}
+
+		mustBe(t, TokenType.RParen);
+		t = l.lex();
+
+		t = parseOptionalUnnamedAddr(t, f);
+		t = parseOptionalFunctionAttributes(t, f);
+		mustBe(t, TokenType.LBrace);
+
+		parseFunctionBody(l.lex(), f);
+
+		return t;
+	}
+
+	public void parse(Module m) {
+		out: while (true) {
+			Token t = l.lex();
+			switch (t.type) {
+			case EOF:
+				break out;
+			case Keyword: {
+				TokenKeyword kw = (TokenKeyword) t;
+				switch (kw.kwe) {
+				case TARGET:
+					/// target [triple|datalayout] = "[string]"
+					t = l.lex();
+					keyword(t);
+					kw = (TokenKeyword) t;
+					if (kw.kwe != Keyword.TRIPLE && kw.kwe != Keyword.DATALAYOUT)
+						throw new IllegalStateException();
+
+					// Must be an equal sign
+					mustBe(l.lex(), TokenType.Equal);
+
+					// Now must be a string
+					t = l.lex();
+					mustBe(t, TokenType.String);
+
+					if (kw.kwe == Keyword.TRIPLE)
+						m.targetTriple = t.toString();
+					else
+						m.datalayout = t.toString();
+					break;
+				case DEFINE: {
+					Function f = new Function();
+					t = l.lex();
+
+					parseFunctionHeader(t, f);
+
+					// Add the function to our list.
+					m.functions.add(f);
+					break;
+				}
+				case ATTRIBUTES: {
+					Token temp;
+					mustBe(temp = l.lex(), TokenType.AttributeGroup);
+					mustBe(l.lex(), TokenType.Equal);
+					mustBe(l.lex(), TokenType.LBrace);
+					t = l.lex();
+					AttributeList attrs = new AttributeList();
+					while (t.type != TokenType.RBrace) 
+						t = parseOptionalFunctionAttributes(t, attrs);
+					m.attributes.put(((TokenAttributeGroup)temp).id, attrs);
+					break;
+				}
+				default:
+					throw new IllegalStateException("Unknown keyword " + kw.kw);
+				}
+			}
+			}
+		}
+	}
+}
