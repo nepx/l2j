@@ -11,6 +11,7 @@ public enum TokenType {
 	GlobalVariable,
 	LocalVariable,
 	AttributeGroup,
+	Metadata,
 	
 	Label, // TODO
 	
@@ -21,5 +22,6 @@ public enum TokenType {
 	LBrace,
 	RBrace,
 	Star,
-	Hash
+	Hash,
+	Exclaim
 }

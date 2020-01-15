@@ -28,7 +28,7 @@ public class Lexer {
 	 * @return
 	 */
 	private char next() {
-		if (pos > data.length)
+		if (pos >= data.length)
 			return 0xFFFF;
 		char next = (char) data[pos++];
 		return next;
@@ -171,7 +171,7 @@ public class Lexer {
 		} while (current != '"');
 		return new TokenString(slice());
 	}
-	
+
 	/**
 	 * 
 	 * @param x
@@ -179,6 +179,14 @@ public class Lexer {
 	 */
 	static private boolean varChar(char x) {
 		return x == '-' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <='9') || x == '\\';
+	}
+	/**
+	 * 
+	 * @param x
+	 * @return
+	 */
+	static private boolean metadataChar(char x) {
+		return x == '.' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <='9');
 	}
 	
 	/**
@@ -205,6 +213,20 @@ public class Lexer {
 		while(varChar(next()));
 		prev();
 		return isGlobal ? new TokenGlobalVariable(slice()) : new TokenLocalVariable(slice());
+	}
+	
+	/**
+	 * Parse metadata node
+	 * ![A-Za-z0-9.]
+	 * @return
+	 */
+	private Token lexMetadata() {
+		start(0);
+		char cur = next();
+		while(metadataChar(cur)) cur = next();
+		prev();
+		if(startPos == pos) return new TokenSymbol('!', TokenType.Exclaim); // Just a single '!'
+		return new TokenMetadata(slice());
 	}
 	
 	/**
@@ -318,6 +340,9 @@ public class Lexer {
 			case '%':
 			case '@':
 				res = parseVar(current == '@');
+				break out;
+			case '!':
+				res = lexMetadata();
 				break out;
 			default:
 				if (symbols.containsKey(current)) {

@@ -602,6 +602,15 @@ public class Parser {
 			switch (t.type) {
 			case EOF:
 				break out;
+			case Metadata:
+				mustBe(l.lex(), TokenType.Equal);
+				mustBe(l.lex(), TokenType.Exclaim);
+				mustBe(l.lex(), TokenType.LBrace);
+				t = l.lex();
+				
+				// TODO: read metadata
+				while(t.type != TokenType.RBrace) t = l.lex();
+				break;
 			case Keyword: {
 				TokenKeyword kw = (TokenKeyword) t;
 				switch (kw.kwe) {
