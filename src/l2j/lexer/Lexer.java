@@ -241,6 +241,8 @@ public class Lexer {
 		prev();
 		return new TokenIntegerConstant(Integer.parseInt(slice()));
 	}
+	
+	private static Token TokenEOF = new TokenSymbol(' ', TokenType.EOF);
 
 	public Token lex() {
 		Token res;
@@ -343,6 +345,9 @@ public class Lexer {
 				break out;
 			case '!':
 				res = lexMetadata();
+				break out;
+			case 0xFFFF:
+				res = TokenEOF;
 				break out;
 			default:
 				if (symbols.containsKey(current)) {
