@@ -3,6 +3,7 @@ package l2j;
 import l2j.lexer.Lexer;
 import l2j.module.Module;
 import l2j.parser.Parser;
+import l2j.translator.Translator;
 
 public class Main {
 	private static void help() {
@@ -31,5 +32,7 @@ public class Main {
 		Parser p = new Parser(l);
 		Module m = new Module();
 		p.parse(m);
+		
+		Translator t = new Translator(m);
 	}
 }
