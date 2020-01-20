@@ -1,5 +1,11 @@
 package l2j;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
 import l2j.lexer.Lexer;
 import l2j.module.Module;
 import l2j.parser.Parser;
@@ -33,6 +39,27 @@ public class Main {
 		Module m = new Module();
 		p.parse(m);
 		
-		Translator t = new Translator(m);
+		String basename = null;
+		// Open file stream
+		if(input.contains("."))basename = input.substring(0, input.lastIndexOf('.')) + ".jasmin";
+		else basename = input + ".jasmin";
+		
+		BufferedWriter writer;
+		Translator t;
+		try {
+			File file = new File(basename);
+			FileOutputStream fs = new FileOutputStream(file);
+			OutputStreamWriter ow = new OutputStreamWriter(fs);
+			writer = new BufferedWriter(ow);
+			t = new Translator(m, writer);
+			
+			int flen = m.functions.size();
+			for(int i=0;i<flen;i++)
+				t.translateFunction(m.functions.get(i));
+		} catch(IOException e) {
+			System.out.println("Unable to produce Jasmin assembly file");
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 }
