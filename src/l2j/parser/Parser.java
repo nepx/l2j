@@ -422,16 +422,17 @@ public class Parser {
 	 * Parse instruction
 	 * 
 	 * @param t
+	 * @param f
 	 * @return
 	 */
-	private Instruction parseInstruction(Token t) {
+	private Instruction parseInstruction(Token t, Function f) {
 		// Check if it's an assignment
 		String destination = null;
-		Instruction i;
 		if (t.type == TokenType.LocalVariable) {
 			destination = ((TokenLocalVariable) t).name;
 			mustBe(l.lex(), TokenType.Equal);
 			t = l.lex();
+			f.lvars.put(destination, new LocalVariable(destination));
 		}
 		mustBe(t, TokenType.Instruction);
 		switch (((TokenInstruction) t).kwe) {
@@ -535,7 +536,7 @@ public class Parser {
 				name = f.getTempName();
 			}
 			do {
-				i = parseInstruction(t);
+				i = parseInstruction(t, f);
 				b.instructions.add(i);
 				t = l.lex();
 			} while (!i.isTerminator());
