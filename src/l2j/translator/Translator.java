@@ -2,9 +2,13 @@ package l2j.translator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 import l2j.module.Module;
 import l2j.module.function.Function;
+import l2j.module.function.instruction.Instruction;
+import l2j.module.function.BasicBlock;
 
 /**
  * Things to do here...
@@ -24,6 +28,13 @@ public class Translator {
 	 */
 	public Translator(Module m, BufferedWriter b) {
 		this.m = m;
+		this.b = b;
+	}
+	
+	// Backend emitters
+	private void emitLabel(String name) throws IOException {
+		b.append(name);
+		b.append(":\n");
 	}
 	
 	/**
@@ -33,5 +44,8 @@ public class Translator {
 		// We have to break down this function into multiple Java basic blocks.
 		// Luckily, the parser has already done that for us.
 		
+		Set<Map.Entry<String, BasicBlock>> es = f.blocks.entrySet();
+		for(Map.Entry<String, BasicBlock> entry : es) {
+		}
 	}
 }
