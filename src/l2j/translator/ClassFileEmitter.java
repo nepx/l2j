@@ -56,6 +56,15 @@ public class ClassFileEmitter {
 		lines.append("\n");
 	}
 	
+	/**
+	 * Create label
+	 * @param name
+	 */
+	public void label(String name) {
+		lines.append(name);
+		lines.append(":\n");
+	}
+	
 	public void dump() {
 		System.out.println(lines.toString());
 	}

@@ -61,7 +61,7 @@ public class Translator {
 
 		Set<Map.Entry<String, BasicBlock>> es = f.blocks.entrySet();
 		for (Map.Entry<String, BasicBlock> entry : es) {
-			
+			cf.label(sanitizeName(entry.getKey()));
 		}
 		
 		cf.endMethod();
