@@ -19,4 +19,8 @@ public class IntegerType extends Type {
 	public String toString() {
 		return "i" + width;
 	}
+	
+	public int getSize() {
+		return getPreferredAlignment();
+	}
 }

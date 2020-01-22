@@ -16,5 +16,8 @@ public class VoidType extends Type{
 	public int getPreferredAlignment() {
 		return 0;
 	}
-	
+
+	public int getSize() {
+		return 0;
+	}
 }

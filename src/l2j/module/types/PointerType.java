@@ -18,4 +18,7 @@ public class PointerType extends Type{
 	public int getPreferredAlignment() {
 		return 4;
 	}
+	public int getSize() {
+		return 4;
+	}
 }
