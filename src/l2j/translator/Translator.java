@@ -5,8 +5,9 @@ import java.util.Set;
 
 import l2j.module.Module;
 import l2j.module.function.Function;
-import l2j.module.function.instruction.*;
 import l2j.module.function.BasicBlock;
+import l2j.module.function.instruction.*;
+import l2j.module.value.*;
 
 /**
  * Things to do here...
@@ -33,6 +34,25 @@ public class Translator {
 
 	private String sanitizeName(String name) {
 		return name.replaceAll("[^A-Za-z0-9_$]", "_");
+	}
+
+	/**
+	 * Push a single value onto the stack
+	 * 
+	 * @param cf
+	 * @param v
+	 */
+	private void loadValue(ClassFileEmitter cf, Value v) {
+		switch (v.type) {
+		case Constant:
+			cf.pushInt(((ValueConstant) v).value);
+			break;
+		case LocalVariable:
+			cf.loadIntFromVariable(((ValueLocalVariable) v).getID());
+			break;
+		default:
+			throw new UnsupportedOperationException("TODO: load value: " + v.type);
+		}
 	}
 
 	/**
@@ -66,21 +86,31 @@ public class Translator {
 			for (int i = 0; i < insnCount; i++) {
 				Instruction insn = b.instructions.get(i);
 				switch (insn.type) {
-				case Alloca: { 
+				case Alloca: {
 					// Bytecode breakdown:
-					//  1. Push the number of bytes to allocate
-					//  2. Call the allocation function
-					//  3. Store the result in a local variable
-					InstructionAlloca ia = (InstructionAlloca)insn;
+					// 1. Push the number of bytes to allocate
+					// 2. Call the allocation function
+					// 3. Store the result in a local variable
+					InstructionAlloca ia = (InstructionAlloca) insn;
 					int bytesToAllocate = ia.type.getSize() * ia.numElements;
 					cf.pushInt(bytesToAllocate);
 					cf.invokeStatic("l2j/runtime/Memory/alloca(I)I");
 					cf.storeIntToVariable(ia.destination.getID());
-					break; 
+					break;
+				}
+				case Store: {
+					// Bytecode breakdown
+					// 1. Load requested value from stack
+					// 2. Load address to stack
+					// 2. Call a function to write to memory
+					InstructionStore is = (InstructionStore) insn;
+					loadValue(cf, is.value);
+					loadValue(cf, is.pointer);
+					cf.invokeStatic("l2j/runtime/Memory/store32(II)V");
 				}
 				default:
 					continue;
-					//throw new UnsupportedOperationException("Unknown operation: " + insn.type);
+				// throw new UnsupportedOperationException("Unknown operation: " + insn.type);
 				}
 			}
 		}

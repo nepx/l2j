@@ -113,6 +113,17 @@ public class ClassFileEmitter {
 		}
 		lines.append("\n");
 	}
+	
+	public void loadIntFromVariable(int varid) {
+		if(varid <= 3) {
+			lines.append("iload_");
+			lines.append(varid);
+		}else {
+			lines.append("iload ");
+			lines.append(varid);
+		}
+		lines.append("\n");
+	}
 
 	public void dump() {
 		System.out.println(lines.toString());
