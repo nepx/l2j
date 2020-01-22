@@ -10,6 +10,10 @@ public class PointerType extends Type{
 	public String toString() {
 		return pointedTo.toString() + "*";
 	}
+	
+	public char getJavaSignatureType() {
+		return 'I';
+	}
 
 	public int getPreferredAlignment() {
 		return 4;

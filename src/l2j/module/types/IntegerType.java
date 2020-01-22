@@ -11,6 +11,11 @@ public class IntegerType extends Type {
 		return (this.width + 7) >> 3;
 	}
 	
+	public char getJavaSignatureType() {
+		// TODO: larger integers?
+		return 'I';
+	}
+	
 	public String toString() {
 		return "i" + width;
 	}

@@ -8,6 +8,10 @@ public class VoidType extends Type{
 	public String toString() {
 		return "void";
 	}
+	
+	public char getJavaSignatureType() {
+		return 'V';
+	}
 
 	public int getPreferredAlignment() {
 		return 0;

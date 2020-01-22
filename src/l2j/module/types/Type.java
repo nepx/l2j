@@ -8,6 +8,7 @@ public abstract class Type {
 	
 	public abstract String toString();
 	public abstract int getPreferredAlignment();
+	public abstract char getJavaSignatureType();
 	
 	public boolean equals(Type t) {
 		return this.type == t.type;
