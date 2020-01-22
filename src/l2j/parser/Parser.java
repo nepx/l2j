@@ -453,7 +453,6 @@ public class Parser {
 			Type type = parseType(t);
 			Value value = parseValue(null);
 			mustBe(l.lex(), TokenType.Comma);
-			System.out.println(l.lex());
 			l.unlex();
 			Type pointerType = parseType(null); // Note: parseType eats pointer asterixes
 			Value pointer = parseValue(null);

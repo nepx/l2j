@@ -268,7 +268,6 @@ public class Lexer {
 				break out;
 			case 'i':
 				res = lexInteger();
-				System.out.printf("HERE %s\n", slice());
 				if (res != null)
 					break out;
 			case 'A':
