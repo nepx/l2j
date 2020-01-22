@@ -428,19 +428,23 @@ public class Parser {
 	private Instruction parseInstruction(Token t, Function f) {
 		// Check if it's an assignment
 		String destination = null;
+		Variable dest=  null;
 		if (t.type == TokenType.LocalVariable) {
 			destination = ((TokenLocalVariable) t).name;
 			mustBe(l.lex(), TokenType.Equal);
 			t = l.lex();
-			f.lvars.put(destination, new LocalVariable(destination));
+			dest= new LocalVariable(destination, f);
+			f.lvars.put(destination, (LocalVariable)dest);
 		}
 		mustBe(t, TokenType.Instruction);
+		Instruction insn = null;
 		switch (((TokenInstruction) t).kwe) {
 		case RET: {
 			Type type = parseType(null);
 			Value value = parseValue(null);
 
-			return new InstructionRet(type, value);
+			insn =  new InstructionRet(type, value);
+			break;
 		}
 		case STORE: {
 			t = l.lex();
@@ -467,8 +471,9 @@ public class Parser {
 				}
 			}
 			l.unlex();
-			return new InstructionStore(atomic, isVolatile, type, value, pointerType, pointer, align, nontemporal,
+			insn =  new InstructionStore(atomic, isVolatile, type, value, pointerType, pointer, align, nontemporal,
 					invariant);
+			break;
 		}
 		case ALLOCA: {
 			t = l.lex();
@@ -509,11 +514,14 @@ public class Parser {
 				break;
 			}
 			l.unlex();
-			return new InstructionAlloca(inalloca, type, numElementsType, numElements, align, addrspace);
+			insn =  new InstructionAlloca(inalloca, type, numElementsType, numElements, align, addrspace);
+			break;
 		}
 		default:
 			throw new UnsupportedOperationException("Unknown instruction: " + ((TokenInstruction) t).kwe);
 		}
+		insn.destination = dest;
+		return insn;
 	}
 
 	/**

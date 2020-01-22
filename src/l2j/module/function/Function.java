@@ -31,6 +31,11 @@ public class Function {
 	public HashMap<String, LocalVariable> lvars = new HashMap<String, LocalVariable>();
 
 	private int internalNumberingID;
+	
+	private int internalLvarNumberingID = 0;
+	public int getLocalVariableID() {
+		return internalLvarNumberingID++;
+	}
 
 	public String getTempName() {
 		return Integer.toString(internalNumberingID++);

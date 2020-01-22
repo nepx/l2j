@@ -1,5 +1,6 @@
 package l2j.module.function.instruction;
 
+import l2j.module.function.Variable;
 import l2j.module.types.Type;
 
 public abstract class Instruction {
@@ -11,7 +12,7 @@ public abstract class Instruction {
 	/**
 	 * The destination of the operation (where does the result go?)
 	 */
-	public String destination;
+	public Variable destination;
 	
 	public abstract String toString();
 	public abstract boolean isTerminator();
