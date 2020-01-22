@@ -62,8 +62,18 @@ public class Translator {
 		Set<Map.Entry<String, BasicBlock>> es = f.blocks.entrySet();
 		for (Map.Entry<String, BasicBlock> entry : es) {
 			cf.label(sanitizeName(entry.getKey()));
+
+			BasicBlock b = entry.getValue();
+			int insnCount = b.instructions.size();
+			for (int i = 0; i < insnCount; i++) {
+				Instruction insn = b.instructions.get(i);
+				switch (insn.type) {
+				default:
+					throw new UnsupportedOperationException("Unknown operation: " + insn.type);
+				}
+			}
 		}
-		
+
 		cf.endMethod();
 		cf.dump();
 	}
