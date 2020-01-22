@@ -488,7 +488,7 @@ public class Parser {
 				// 2. align <number>
 				// 3. addrspace(<number>)
 				t = l.lex();
-				if ((numElementsType = parseType(t)) == null) {
+				if ((numElementsType = parseType(t)) != null) {
 					// Option 1
 					numElements = getInteger(l.lex());
 					t = l.lex();
