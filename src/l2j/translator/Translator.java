@@ -45,6 +45,14 @@ public class Translator {
 		String className = sanitizeName(f.name);
 		ClassFileEmitter cf = new ClassFileEmitter(basename + className);
 		
+		// Build method signature
+		StringBuilder sig = new StringBuilder();
+		sig.append("call(");
+		int paramCount = f.parameters.size();
+		for(int i=0;i<paramCount;i++) {
+			
+		}
+		
 		Set<Map.Entry<String, BasicBlock>> es = f.blocks.entrySet();
 		for(Map.Entry<String, BasicBlock> entry : es) {
 		}

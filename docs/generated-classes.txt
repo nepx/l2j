@@ -1,0 +1,9 @@
+Information on generated classes 
+
+For every LLVM function, l2j generates a separate Java class file. Each file looks like the following:
+
+public class JavaFunction {
+	public static int call(int params ...){
+		// ... code goes here ...
+	}
+}

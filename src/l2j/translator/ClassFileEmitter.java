@@ -27,10 +27,32 @@ public class ClassFileEmitter {
 	}
 	
 	/**
+	 * Create new method
+	 * @param access
+	 * @param spec
+	 */
+	public void createMethod(String access, String spec) {
+		lines.append(".method ");
+		lines.append(access);
+		lines.append(" ");
+		lines.append(spec);
+		lines.append("\n");
+	}
+	
+	/**
+	 * End method declaration
+	 */
+	public void endMethod() {
+		lines.append(".end method\n");
+	}
+	
+	/**
 	 * Set number of locals
 	 * @param locals
 	 */
 	public void setLocals(int locals) {
-		
+		lines.append(".limit locals ");
+		lines.append(locals);
+		lines.append("\n");
 	}
 }
