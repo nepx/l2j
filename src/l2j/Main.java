@@ -41,25 +41,12 @@ public class Main {
 		
 		String basename = null;
 		// Open file stream
-		if(input.contains("."))basename = input.substring(0, input.lastIndexOf('.')) + ".jasmin";
-		else basename = input + ".jasmin";
+		if(input.contains("/"))basename = input.substring(0, input.lastIndexOf('/')) + "/";
+		else basename = input + "/";
 		
-		BufferedWriter writer;
-		Translator t;
-		try {
-			File file = new File(basename);
-			FileOutputStream fs = new FileOutputStream(file);
-			OutputStreamWriter ow = new OutputStreamWriter(fs);
-			writer = new BufferedWriter(ow);
-			t = new Translator(m, writer);
-			
+			Translator t = new Translator(m, basename);
 			int flen = m.functions.size();
 			for(int i=0;i<flen;i++)
 				t.translateFunction(m.functions.get(i));
-		} catch(IOException e) {
-			System.out.println("Unable to produce Jasmin assembly file");
-			e.printStackTrace();
-			System.exit(1);
-		}
 	}
 }

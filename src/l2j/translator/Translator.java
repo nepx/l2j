@@ -19,30 +19,31 @@ import l2j.module.function.BasicBlock;
  */
 public class Translator {
 	private Module m;
-	private BufferedWriter b;
+	private String basename;
 	
 	/**
 	 * LLVM module to Java bytecode translator
 	 * @param m
 	 * @param b
 	 */
-	public Translator(Module m, BufferedWriter b) {
+	public Translator(Module m, String b) {
 		this.m = m;
-		this.b = b;
+		this.basename = b;
 	}
 	
-	// Backend emitters
-	private void emitLabel(String name) throws IOException {
-		b.append(name);
-		b.append(":\n");
+	private String sanitizeName(String name) {
+		return name.replaceAll("[^A-Za-z0-9_$]", "_");
 	}
 	
 	/**
 	 * Translate a single function to Java bytecode
 	 */
-	public void translateFunction(Function f) throws IOException {
+	public void translateFunction(Function f) {
 		// We have to break down this function into multiple Java basic blocks.
 		// Luckily, the parser has already done that for us.
+		
+		String className = sanitizeName(f.name);
+		ClassFileEmitter cf = new ClassFileEmitter(basename + className);
 		
 		Set<Map.Entry<String, BasicBlock>> es = f.blocks.entrySet();
 		for(Map.Entry<String, BasicBlock> entry : es) {
