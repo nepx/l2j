@@ -55,4 +55,8 @@ public class ClassFileEmitter {
 		lines.append(locals);
 		lines.append("\n");
 	}
+	
+	public void dump() {
+		System.out.println(lines.toString());
+	}
 }
