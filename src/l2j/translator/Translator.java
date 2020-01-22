@@ -1,13 +1,11 @@
 package l2j.translator;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 import l2j.module.Module;
 import l2j.module.function.Function;
-import l2j.module.function.instruction.Instruction;
+import l2j.module.function.instruction.*;
 import l2j.module.function.BasicBlock;
 
 /**
@@ -68,8 +66,21 @@ public class Translator {
 			for (int i = 0; i < insnCount; i++) {
 				Instruction insn = b.instructions.get(i);
 				switch (insn.type) {
+				case Alloca: { 
+					// Bytecode breakdown:
+					//  1. Push the number of bytes to allocate
+					//  2. Call the allocation function
+					//  3. Store the result in a local variable
+					InstructionAlloca ia = (InstructionAlloca)insn;
+					int bytesToAllocate = ia.type.getSize() * ia.numElements;
+					cf.pushInt(bytesToAllocate);
+					cf.invokeStatic("l2j/runtime/Memory/alloca(I)I");
+					cf.storeIntToVariable(ia.destination.getID());
+					break; 
+				}
 				default:
-					throw new UnsupportedOperationException("Unknown operation: " + insn.type);
+					continue;
+					//throw new UnsupportedOperationException("Unknown operation: " + insn.type);
 				}
 			}
 		}
