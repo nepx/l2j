@@ -6,4 +6,8 @@ public class ValueConstant extends Value {
 		super(ValueType.Constant);
 		this.value = value;
 	}
+	
+	public String toString() {
+		return Integer.toString(value);
+	}
 }

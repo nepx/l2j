@@ -18,4 +18,8 @@ public class ValueLocalVariable extends Value {
 	public int getID() {
 		return backingVar.getID();
 	}
+	
+	public String toString() {
+		return "%" + this.name;
+	}
 }
