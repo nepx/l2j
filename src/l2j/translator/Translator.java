@@ -107,6 +107,7 @@ public class Translator {
 					loadValue(cf, is.value);
 					loadValue(cf, is.pointer);
 					cf.invokeStatic("l2j/runtime/Memory/store32(II)V");
+					break;
 				}
 				default:
 					continue;
