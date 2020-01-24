@@ -1,14 +1,14 @@
 package l2j.translator;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class ClassFileEmitter {
 	private String dest;
 	private StringBuilder lines = new StringBuilder();
 
 	public ClassFileEmitter(String dest) {
-		this.dest = dest;
-		lines.append(".super java/lang/Object\n");
+		this.dest = dest + ".jasmin";
 	}
 
 	/**
@@ -19,7 +19,7 @@ public class ClassFileEmitter {
 	public void setClassName(String name) {
 		lines.append(".class public ");
 		lines.append(name);
-		lines.append("\n");
+		lines.append("\n.super java/lang/Object\\n");
 
 		// stupid check
 		if (dest.indexOf(name) == -1)
@@ -127,5 +127,21 @@ public class ClassFileEmitter {
 
 	public void dump() {
 		System.out.println(lines.toString());
+	}
+	
+	public void returnInteger() {
+		lines.append("ireturn\n");
+	}
+	
+	public void write() {
+		try {
+			System.out.println(dest);
+			PrintWriter out = new PrintWriter(dest);
+			out.print(lines.toString());
+			out.close();
+		}catch(IOException e) {
+			e.printStackTrace();
+			throw new IllegalStateException("could not write to file");
+		}
 	}
 }

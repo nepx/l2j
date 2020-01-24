@@ -18,10 +18,11 @@ public class Main {
 		System.err.println(" --help: Help");
 		System.exit(1);
 	}
+
 	public static void main(String[] args) {
 		String input = null;
-		for(int i=0;i<args.length;i++) {
-			switch(args[i]) {
+		for (int i = 0; i < args.length; i++) {
+			switch (args[i]) {
 			case "--help":
 				help();
 				break;
@@ -30,7 +31,7 @@ public class Main {
 				break;
 			}
 		}
-		if(input == null) {
+		if (input == null) {
 			System.err.println("No input files specified");
 			System.exit(1);
 		}
@@ -38,15 +39,17 @@ public class Main {
 		Parser p = new Parser(l);
 		Module m = new Module();
 		p.parse(m);
-		
+
 		String basename = null;
 		// Open file stream
-		if(input.contains("/"))basename = input.substring(0, input.lastIndexOf('/')) + "/";
-		else basename = input + "/";
-		
-			Translator t = new Translator(m, basename);
-			int flen = m.functions.size();
-			for(int i=0;i<flen;i++)
-				t.translateFunction(m.functions.get(i));
+		if (input.contains("/"))
+			basename = input.substring(0, input.lastIndexOf('/')) + "/";
+		else
+			basename = input + "/";
+
+		Translator t = new Translator(m, basename);
+		int flen = m.functions.size();
+		for (int i = 0; i < flen; i++)
+			t.translateFunction(m.functions.get(i));
 	}
 }

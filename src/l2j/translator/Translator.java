@@ -109,6 +109,12 @@ public class Translator {
 					cf.invokeStatic("l2j/runtime/Memory/store32(II)V");
 					break;
 				}
+				case Ret: {
+					InstructionRet ir = (InstructionRet)insn;
+					loadValue(cf, ir.value);
+					cf.returnInteger();
+					break;
+				}
 				default:
 					continue;
 				// throw new UnsupportedOperationException("Unknown operation: " + insn.type);
@@ -118,5 +124,6 @@ public class Translator {
 
 		cf.endMethod();
 		cf.dump();
+		cf.write();
 	}
 }
