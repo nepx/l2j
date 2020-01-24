@@ -273,15 +273,22 @@ public class Parser {
 	 * Parse a value, either a constant or a local variable
 	 * 
 	 * @param t
+	 * @param f
 	 * @return
 	 */
-	private Value parseValue(Token t) {
-		if (t == null)
+	private Value parseValue(Token t, Function f) {
+		boolean undo = false;
+		if (t == null) {
+			undo = true;
 			t = l.lex();
+		}
 		switch (t.type) {
 		case IntegerConstant:
 			return new ValueConstant(getInteger(t));
+		case LocalVariable:
+			return new ValueLocalVariable(((TokenLocalVariable)t).name, f);
 		default:
+			if(undo) l.unlex();
 			return null;
 		}
 	}
@@ -441,7 +448,7 @@ public class Parser {
 		switch (((TokenInstruction) t).kwe) {
 		case RET: {
 			Type type = parseType(null);
-			Value value = parseValue(null);
+			Value value = parseValue(null, f);
 
 			insn =  new InstructionRet(type, value);
 			break;
@@ -455,10 +462,10 @@ public class Parser {
 			if (isVolatile)
 				t = l.lex();
 			Type type = parseType(t);
-			Value value = parseValue(null);
+			Value value = parseValue(null, f);
 			mustBe(l.lex(), TokenType.Comma);
 			Type pointerType = parseType(null); // Note: parseType eats pointer asterixes
-			Value pointer = parseValue(null);
+			Value pointer = parseValue(null, f);
 			t = l.lex();
 
 			int align = 0, nontemporal = 0, invariant = 0;
