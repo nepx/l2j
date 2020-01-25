@@ -19,7 +19,7 @@ public class ClassFileEmitter {
 	public void setClassName(String name) {
 		lines.append(".class public ");
 		lines.append(name);
-		lines.append("\n.super java/lang/Object\\n");
+		lines.append("\n.super java/lang/Object\n");
 
 		// stupid check
 		if (dest.indexOf(name) == -1)
@@ -37,7 +37,7 @@ public class ClassFileEmitter {
 		lines.append(access);
 		lines.append(" ");
 		lines.append(spec);
-		lines.append("\n");
+		lines.append("\n.limit stack 10\n");
 	}
 
 	/**

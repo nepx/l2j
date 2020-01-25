@@ -64,6 +64,7 @@ public class Translator {
 
 		String className = sanitizeName(f.name);
 		ClassFileEmitter cf = new ClassFileEmitter(basename + className);
+		cf.setClassName(className);
 
 		// Build method signature
 		StringBuilder sig = new StringBuilder();
@@ -79,7 +80,7 @@ public class Translator {
 
 		Set<Map.Entry<String, BasicBlock>> es = f.blocks.entrySet();
 		for (Map.Entry<String, BasicBlock> entry : es) {
-			cf.label(sanitizeName(entry.getKey()));
+			cf.label("label" + sanitizeName(entry.getKey()));
 
 			BasicBlock b = entry.getValue();
 			int insnCount = b.instructions.size();
