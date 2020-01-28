@@ -55,5 +55,7 @@ public class Main {
 		for (int i = 0; i < flen; i++) {
 			comp.compile(m.functions.get(i));
 		}
+		
+		// Now try running the file
 	}
 }

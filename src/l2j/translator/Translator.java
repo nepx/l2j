@@ -65,6 +65,7 @@ public class Translator {
 		String className = sanitizeName(f.name);
 		ClassFileEmitter cf = new ClassFileEmitter(basename + className);
 		cf.setClassName(className);
+		cf.setExtends("l2j/runtime/FunctionImpl");
 
 		// Build method signature
 		StringBuilder sig = new StringBuilder();

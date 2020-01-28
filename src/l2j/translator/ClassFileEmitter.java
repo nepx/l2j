@@ -144,4 +144,10 @@ public class ClassFileEmitter {
 			throw new IllegalStateException("could not write to file");
 		}
 	}
+	
+	public void setExtends(String name) {
+		lines.append(".extends ");
+		lines.append(name);
+		lines.append("\n");
+	}
 }
