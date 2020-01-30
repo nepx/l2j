@@ -98,6 +98,9 @@ public class Translator {
 					cf.pushInt(bytesToAllocate);
 					cf.invokeStatic("l2j/runtime/Memory/alloca(I)I");
 					cf.storeIntToVariable(ia.destination.getID());
+					
+					// If the alloca is aligned, then indicate that the current local variable is aligned, too.
+					ia.destination.alignment = ia.align;
 					break;
 				}
 				case Store: {
