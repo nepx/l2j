@@ -63,5 +63,4 @@ public class InstructionStore extends Instruction {
 	public Type resultType() {
 		return new VoidType();
 	}
-	
 }
