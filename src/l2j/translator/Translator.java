@@ -54,6 +54,16 @@ public class Translator {
 			throw new UnsupportedOperationException("TODO: load value: " + v.type);
 		}
 	}
+	
+	/**
+	 * Call this before you exit a function!
+	 * @param cf
+	 * @param totalBytesAllocated
+	 */
+	private void procExitHandler(ClassFileEmitter cf, int totalBytesAllocated) {
+		cf.pushInt(totalBytesAllocated);
+		cf.invokeStatic("l2j/runtime/Memory/dealloca(I)V");
+	}
 
 	/**
 	 * Translate a single function to Java bytecode
@@ -80,11 +90,13 @@ public class Translator {
 		cf.setLocals(f.lvars.size());
 
 		Set<Map.Entry<String, BasicBlock>> es = f.blocks.entrySet();
+		int totalBytesAllocated = 0;
 		for (Map.Entry<String, BasicBlock> entry : es) {
 			cf.label("label" + sanitizeName(entry.getKey()));
 
 			BasicBlock b = entry.getValue();
 			int insnCount = b.instructions.size();
+			
 			for (int i = 0; i < insnCount; i++) {
 				Instruction insn = b.instructions.get(i);
 				switch (insn.type) {
@@ -93,9 +105,12 @@ public class Translator {
 					// 1. Push the number of bytes to allocate
 					// 2. Call the allocation function
 					// 3. Store the result in a local variable
+					// TODO: Call alloca once to get a chunk of stack, and allocate internally from there
+					
 					InstructionAlloca ia = (InstructionAlloca) insn;
 					int bytesToAllocate = ia.type.getSize() * ia.numElements;
 					cf.pushInt(bytesToAllocate);
+					totalBytesAllocated+=bytesToAllocate;
 					cf.invokeStatic("l2j/runtime/Memory/alloca(I)I");
 					cf.storeIntToVariable(ia.destination.getID());
 					
@@ -115,6 +130,8 @@ public class Translator {
 					break;
 				}
 				case Ret: {
+					procExitHandler(cf, totalBytesAllocated);
+					
 					InstructionRet ir = (InstructionRet)insn;
 					loadValue(cf, ir.value);
 					cf.returnInteger();

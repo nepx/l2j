@@ -1,12 +1,37 @@
 package l2j.runtime;
 
 /**
+ * Memory implementation. Handles a flat heap address space. Handles some parts of the stack. 
+ * 
  * @author jkim13
  *
  */
 public class Memory {
 	public static final int MEMORY_SIZE = 32 * 1024 * 1024;
 	public static final int[] memory = new int[MEMORY_SIZE >> 2];
+	
+	/**
+	 * The stack pointer. Like x86 stacks, it grows downwards. 
+	 */
+	private static int esp = 0;
+
+	/**
+	 * Allocate some memory on the stack. 
+	 * @param size
+	 * @return
+	 */
+	public static int alloca(int size) {
+		esp -= size;
+		return esp;
+	}
+	/**
+	 * Deallocate some memory from stack
+	 * @param size
+	 * @return
+	 */
+	public static void dealloca(int size) {
+		esp += size;
+	}
 
 	/**
 	 * Store a 32-bit aligned dword
@@ -20,7 +45,7 @@ public class Memory {
 
 	public static void storeI32(int addr, int data) {
 		int lowbits = addr & 3;
-		if (lowbits != 0) { // Unaligned
+		if (lowbits != 0) { // Unaligned version
 			int aligned_addr = addr >> 2,
 					// Number of bytes to shift
 					to_shift = lowbits << 3,
