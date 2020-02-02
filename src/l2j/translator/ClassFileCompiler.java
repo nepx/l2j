@@ -14,12 +14,13 @@ public class ClassFileCompiler {
 
 	public void compile(Function f) {
 		ProcessBuilder processBuilder = new ProcessBuilder();
+		System.out.printf("%s %s %s %s %s %s\n", "java", "-jar", "jasmin.jar", "-d", basename, basename + f.name + ".jasmin");
 		processBuilder.command("java", "-jar", "jasmin.jar", "-d", basename, basename + f.name + ".jasmin");
 		try {
 			Process process = processBuilder.start();
 			
 			// Read stdout
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
             String line;
             while ((line = reader.readLine()) != null) {

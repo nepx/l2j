@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import l2j.lexer.Lexer;
 import l2j.module.Module;
 import l2j.parser.Parser;
+import l2j.runtime.DynamicMethodLoader;
 import l2j.translator.ClassFileCompiler;
 import l2j.translator.Translator;
 
@@ -42,7 +43,7 @@ public class Main {
 		System.out.println("Lexing and parsing...");
 		p.parse(m);
 
-		String basename = "generated/";
+		String basename = "bin/l2j/generated/";
 
 		Translator t = new Translator(m, basename);
 		int flen = m.functions.size();
@@ -57,5 +58,8 @@ public class Main {
 		}
 		
 		// Now try running the file
+		
+		DynamicMethodLoader dml = new DynamicMethodLoader("l2j/generated/");
+		dml.loadInstance("main");
 	}
 }

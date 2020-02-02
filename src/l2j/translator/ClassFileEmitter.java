@@ -19,7 +19,7 @@ public class ClassFileEmitter {
 	public void setClassName(String name) {
 		lines.append(".class public ");
 		lines.append(name);
-		lines.append("\n.super java/lang/Object\n");
+		lines.append("\n");
 
 		// stupid check
 		if (dest.indexOf(name) == -1)
@@ -146,7 +146,7 @@ public class ClassFileEmitter {
 	}
 	
 	public void setExtends(String name) {
-		lines.append(".extends ");
+		lines.append(".super ");
 		lines.append(name);
 		lines.append("\n");
 	}
