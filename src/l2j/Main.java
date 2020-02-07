@@ -10,6 +10,7 @@ import l2j.lexer.Lexer;
 import l2j.module.Module;
 import l2j.parser.Parser;
 import l2j.runtime.DynamicMethodLoader;
+import l2j.runtime.FunctionImpl;
 import l2j.translator.ClassFileCompiler;
 import l2j.translator.Translator;
 
@@ -59,7 +60,8 @@ public class Main {
 		
 		// Now try running the file
 		
-		DynamicMethodLoader dml = new DynamicMethodLoader("l2j/generated/");
-		dml.loadInstance("main");
+		DynamicMethodLoader dml = new DynamicMethodLoader("l2j.runtime.functions.");
+		FunctionImpl test = dml.loadInstance("TestFunction");
+		test.call(null);
 	}
 }

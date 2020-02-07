@@ -6,5 +6,8 @@ package l2j.runtime;
  *
  */
 public abstract class FunctionImpl {
+	public FunctionImpl() {
+		
+	}
 	public abstract int call(int[] params);
 }
