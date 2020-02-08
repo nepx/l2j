@@ -17,7 +17,7 @@ public class ClassFileEmitter {
 	 * @param name
 	 */
 	public void setClassName(String name) {
-		lines.append(".class public ");
+		lines.append(".class public l2j/generated/");
 		lines.append(name);
 		lines.append("\n");
 

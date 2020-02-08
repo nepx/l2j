@@ -44,7 +44,7 @@ public class Main {
 		System.out.println("Lexing and parsing...");
 		p.parse(m);
 
-		String basename = "bin/l2j/generated/";
+		String basename = "bin/";
 
 		Translator t = new Translator(m, basename);
 		int flen = m.functions.size();
@@ -63,5 +63,8 @@ public class Main {
 		DynamicMethodLoader dml = new DynamicMethodLoader("l2j.runtime.functions.");
 		FunctionImpl test = dml.loadInstance("TestFunction");
 		test.call(null);
+		
+		DynamicMethodLoader dml2 = new DynamicMethodLoader("");
+		FunctionImpl test2 = dml2.loadInstance("l2j.generated.main");
 	}
 }

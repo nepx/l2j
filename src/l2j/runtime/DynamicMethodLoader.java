@@ -1,5 +1,9 @@
 package l2j.runtime;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+
 /**
  * Dynamically loads modules from class files.
  * 
@@ -8,6 +12,7 @@ package l2j.runtime;
  */
 public class DynamicMethodLoader {
 	private String basepath;
+	private ClassLoader classLoader;
 
 	/**
 	 * Initialize method loader with a given base path
@@ -16,6 +21,28 @@ public class DynamicMethodLoader {
 	 */
 	public DynamicMethodLoader(String basepath) {
 		this.basepath = basepath;
+		try {
+			File f = new File(basepath);
+			URL[] urls = new URL[] {f.toURI().toURL()};
+			classLoader = new URLClassLoader(urls);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Load a file from URL
+	 * @param classId
+	 * @return
+	 */
+	public FunctionImpl loadInstanceURL(String classId) {
+		try {
+			Class clz = classLoader.loadClass(classId);
+			return (FunctionImpl) clz.newInstance();
+		}catch(Exception e) {
+			e.printStackTrace();
+			return loadInstance(classId);
+		}
 	}
 
 	public FunctionImpl loadInstance(String classId) {
