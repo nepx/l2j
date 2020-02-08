@@ -73,13 +73,13 @@ public class Translator {
 	 * @param cf
 	 * @param f
 	 * @param sig      Method signature
-	 * @param thisName Name of this class
 	 */
-	private void generateCall(ClassFileEmitter cf, Function f, String sig, String thisName) {
+	private void generateCall(ClassFileEmitter cf, Function f, String sig) {
 		cf.createMethod("public", "call(I)I");
+		cf.setLocals(f.parameters.size() + 2); // one for the argument, one for this
 		if (f.parameters.size() != 0)
 			throw new IllegalStateException("Generate parameter loading idk");
-		cf.invokeStatic(thisName + "/" + sig);
+		cf.invokeStatic(cf.getFullClassName() + "/" + sig);
 		if (f.returnType.type == TypeType.Void)
 			cf.returnVoid();
 		else
@@ -112,7 +112,7 @@ public class Translator {
 
 		// Create our call() method
 		String sigStr = sig.toString();
-		generateCall(cf, f, sigStr, className);
+		generateCall(cf, f, sigStr);
 
 		cf.createMethod("public static", sigStr);
 		cf.setLocals(f.lvars.size());

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class ClassFileEmitter {
-	private String dest;
+	private String dest, className;
 	private StringBuilder lines = new StringBuilder();
 
 	public ClassFileEmitter(String dest) {
@@ -19,11 +19,16 @@ public class ClassFileEmitter {
 	public void setClassName(String name) {
 		lines.append(".class public l2j/generated/");
 		lines.append(name);
+		className = "l2j/generated/" + name;
 		lines.append("\n");
 
 		// stupid check
 		if (dest.indexOf(name) == -1)
 			throw new IllegalStateException("Bad class name");
+	}
+	
+	public String getFullClassName() {
+		return className;
 	}
 
 	/**

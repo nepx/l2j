@@ -39,11 +39,11 @@ public class Memory {
 	 * @param addr Address
 	 * @param data Data
 	 */
-	public static void storeI32Aligned(int addr, int data) {
+	public static void store32Aligned(int addr, int data) {
 		memory[addr >> 2] = data;
 	}
 
-	public static void storeI32(int addr, int data) {
+	public static void store32(int addr, int data) {
 		int lowbits = addr & 3;
 		if (lowbits != 0) { // Unaligned version
 			int aligned_addr = addr >> 2,
