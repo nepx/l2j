@@ -178,7 +178,7 @@ public class Lexer {
 	 * @return
 	 */
 	static private boolean varChar(char x) {
-		return x == '-' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <='9') || x == '\\';
+		return x == '-' || x == '.' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <='9') || x == '\\';
 	}
 	/**
 	 * 

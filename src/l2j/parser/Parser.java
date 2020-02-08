@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import l2j.lexer.*;
 import l2j.lexer.token.*;
+import l2j.module.Linkage;
 import l2j.module.Module;
 import l2j.module.attributes.*;
 import l2j.module.function.*;
@@ -58,21 +59,21 @@ public class Parser {
 	 * Parse linkage type.
 	 * 
 	 * @param t Token to be examined
-	 * @param f Function to be modified
+	 * @param visibillity Visibility statement to be modified
 	 * @return Next token
 	 */
-	private Token parseOptionalLinkageAux(Token t, Function f) {
+	private Token parseOptionalLinkageAux(Token t, Linkage visibillity) {
 		if (t.type != TokenType.Keyword)
 			return t;
 		switch (((TokenKeyword) t).kwe) {
 		case PRIVATE:
-			f.visibillity = Function.VISIBILITY_PRIVATE;
+			visibillity.value = Linkage.VISIBILITY_PRIVATE;
 			break;
 		case INTERNAL:
-			f.visibillity = Function.VISIBILITY_INTERNAL;
+			visibillity.value = Linkage.VISIBILITY_INTERNAL;
 			break;
 		case AVAILABLE_EXTERNALLY:
-			f.visibillity = Function.VISIBILITY_EXTERNAL;
+			visibillity.value = Linkage.VISIBILITY_EXTERNAL;
 			break;
 		case LINKONCE:
 		case WEAK:
@@ -82,10 +83,10 @@ public class Parser {
 		case LINKONCE_ODR:
 		case WEAK_ODR:
 		case EXTERNAL:
-			f.visibillity = Function.VISIBILITY_DEFAULT;
+			visibillity.value = Linkage.VISIBILITY_DEFAULT;
 			break;
 		default:
-			f.visibillity = Function.VISIBILITY_DEFAULT;
+			visibillity.value = Linkage.VISIBILITY_DEFAULT;
 			return t;
 		}
 		return l.lex();
@@ -153,11 +154,11 @@ public class Parser {
 	 * Parse optional linkage
 	 * 
 	 * @param kw
-	 * @param f
+	 * @param l
 	 * @return
 	 */
-	private Token parseOptionalLinkage(Token t, Function f) {
-		t = parseOptionalLinkageAux(t, f);
+	private Token parseOptionalLinkage(Token t, Linkage l) {
+		t = parseOptionalLinkageAux(t, l);
 		t = parseOptionalDSO(t);
 		t = parseOptionalVisibility(t);
 		t = parseOptionalDLLStorage(t);
@@ -566,7 +567,7 @@ public class Parser {
 	 * @return Next token in stream
 	 */
 	private Token parseFunctionHeader(Token t, Function f) {
-		t = parseOptionalLinkage(t, f);
+		t = parseOptionalLinkage(t, f.visibillity);
 		t = parseOptionalCallingConvention(t, f);
 		t = parseOptionalReturnAttributes(t, f);
 
@@ -625,6 +626,10 @@ public class Parser {
 				// TODO: read metadata
 				while(t.type != TokenType.RBrace) t = l.lex();
 				break;
+			case GlobalVariable: {
+				mustBe(l.lex(), TokenType.Equal);
+				break;
+			}
 			case Keyword: {
 				TokenKeyword kw = (TokenKeyword) t;
 				switch (kw.kwe) {
