@@ -145,9 +145,17 @@ public class ClassFileEmitter {
 		}
 	}
 	
+	private String superclass;
+	
 	public void setExtends(String name) {
 		lines.append(".super ");
 		lines.append(name);
 		lines.append("\n");
+		superclass = name;
+	}
+	public void generateDefaultConstructor() {
+		lines.append(".method public <init>()V\naload_0\ninvokespecial ");
+		lines.append(superclass);
+		lines.append("/<init>()V\nreturn\n.end method\n");
 	}
 }

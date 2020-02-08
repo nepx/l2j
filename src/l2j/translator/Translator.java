@@ -76,10 +76,11 @@ public class Translator {
 		ClassFileEmitter cf = new ClassFileEmitter(basename + className);
 		cf.setClassName(className);
 		cf.setExtends("l2j/runtime/FunctionImpl");
+		cf.generateDefaultConstructor();
 
 		// Build method signature
 		StringBuilder sig = new StringBuilder();
-		sig.append("call(");
+		sig.append("exec(");
 		int paramCount = f.parameters.size();
 		for (int i = 0; i < paramCount; i++) {
 			sig.append(f.parameters.get(i).type.getJavaSignatureType());
