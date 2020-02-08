@@ -9,5 +9,5 @@ public abstract class FunctionImpl {
 	public FunctionImpl() {
 		
 	}
-	public abstract int call(int[] params);
+	public abstract int call(int params);
 }

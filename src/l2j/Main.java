@@ -62,9 +62,10 @@ public class Main {
 		
 		DynamicMethodLoader dml = new DynamicMethodLoader("l2j.runtime.functions.");
 		FunctionImpl test = dml.loadInstance("TestFunction");
-		test.call(null);
+		test.call(0);
 		
 		DynamicMethodLoader dml2 = new DynamicMethodLoader("");
 		FunctionImpl test2 = dml2.loadInstance("l2j.generated.main");
+		System.out.println(test2.call(0));
 	}
 }

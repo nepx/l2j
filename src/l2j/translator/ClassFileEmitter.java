@@ -128,9 +128,12 @@ public class ClassFileEmitter {
 	public void dump() {
 		System.out.println(lines.toString());
 	}
-	
+
 	public void returnInteger() {
 		lines.append("ireturn\n");
+	}
+	public void returnVoid() {
+		lines.append("return\n");
 	}
 	
 	public void write() {
