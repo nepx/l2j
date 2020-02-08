@@ -670,6 +670,10 @@ public class Parser {
 					m.attributes.put(((TokenAttributeGroup)temp).id, attrs);
 					break;
 				}
+				case SOURCE_FILENAME: // i dont care
+					mustBe(l.lex(), TokenType.Equal);
+					mustBe(l.lex(), TokenType.String);
+					break;
 				default:
 					throw new IllegalStateException("Unknown keyword " + kw.kw);
 				}
