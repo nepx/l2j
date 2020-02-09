@@ -23,5 +23,7 @@ public enum TokenType {
 	RBrace,
 	Star,
 	Hash,
-	Exclaim
+	Exclaim,
+	LBracket,
+	RBracket
 }

@@ -805,5 +805,7 @@ public class Lexer {
 		symbols.put('}', TokenType.RBrace);
 		symbols.put('*', TokenType.Star);
 		symbols.put('#', TokenType.Hash);
+		symbols.put('[', TokenType.LBracket);
+		symbols.put(']', TokenType.RBracket);
 	};
 }
