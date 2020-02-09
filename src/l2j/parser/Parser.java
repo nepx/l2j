@@ -38,6 +38,13 @@ public class Parser {
 		if (t.type != k)
 			throw new IllegalStateException("Expected " + k.toString() + ", got " + t.type.toString());
 	}
+	private static void mustBe(Token t, Keyword k) {
+		if (t.type != TokenType.Keyword)
+			throw new IllegalStateException("Expected Keyword, got " + t.type.toString());
+		TokenKeyword kw = (TokenKeyword)t;
+		if(kw.kwe != k)
+			throw new IllegalStateException("Expected " + kw.kwe.toString() + ", got " + t.type.toString());
+	}
 
 	private static boolean is(Token t, Keyword k) {
 		if (t.type != TokenType.Keyword)
@@ -278,8 +285,18 @@ public class Parser {
 			t = l.lex();
 		Type result = null;
 		switch (t.type) {
+		case LBracket: {
+			// [u8 x 32]
+			Type type = parseType(null);
+			mustBe(l.lex(), Keyword.X);
+			int count = getInteger(l.lex());
+			mustBe(l.lex(), TokenType.RBracket);
+			result = new ArrayType(type, count);
+			break;
+		}
 		case Integer:
 			result = new IntegerType(((TokenInteger) t).width);
+			break;
 		default:
 			break;
 		}
