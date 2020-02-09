@@ -8,7 +8,7 @@ import l2j.module.attributes.*;
 import l2j.module.types.Type;
 
 public class Function {
-	public Linkage visibillity;
+	public Linkage visibillity = new Linkage();
 
 	public ArrayList<Attribute> returnAttributes = new ArrayList<Attribute>();
 

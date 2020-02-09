@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import l2j.lexer.*;
 import l2j.lexer.token.*;
+import l2j.module.GlobalVariable;
 import l2j.module.Linkage;
 import l2j.module.Module;
 import l2j.module.attributes.*;
@@ -49,6 +50,7 @@ public class Parser {
 			throw new IllegalStateException("Expected integer constant");
 		return ((TokenIntegerConstant) t).value;
 	}
+
 	private static String getString(Token t) {
 		if (t.type != TokenType.String)
 			throw new IllegalStateException("Expected string constant");
@@ -58,7 +60,7 @@ public class Parser {
 	/**
 	 * Parse linkage type.
 	 * 
-	 * @param t Token to be examined
+	 * @param t           Token to be examined
 	 * @param visibillity Visibility statement to be modified
 	 * @return Next token
 	 */
@@ -144,6 +146,25 @@ public class Parser {
 		switch (((TokenKeyword) t).kwe) {
 		case DLLIMPORT:
 		case DLLEXPORT:
+			return l.lex();
+		default:
+			return t;
+		}
+	}
+
+	/**
+	 * Parse thread local storage model https://llvm.org/docs/LangRef.html#tls-model
+	 * 
+	 * @param t
+	 * @return
+	 */
+	private Token parseTLSModel(Token t) {
+		if (t.type != TokenType.Keyword)
+			return t;
+		switch (((TokenKeyword) t).kwe) {
+		case LOCALDYNAMIC:
+		case INITIALEXEC:
+		case LOCALEXEC:
 			return l.lex();
 		default:
 			return t;
@@ -287,9 +308,12 @@ public class Parser {
 		case IntegerConstant:
 			return new ValueConstant(getInteger(t));
 		case LocalVariable:
-			return new ValueLocalVariable(((TokenLocalVariable)t).name, f);
+			if (f == null)
+				throw new IllegalStateException("what's a local variable doing here??");
+			return new ValueLocalVariable(((TokenLocalVariable) t).name, f);
 		default:
-			if(undo) l.unlex();
+			if (undo)
+				l.unlex();
 			return null;
 		}
 	}
@@ -331,11 +355,11 @@ public class Parser {
 			case String: {
 				Token orig = t;
 				t = l.lex();
-				if(t.type == TokenType.Equal) {
+				if (t.type == TokenType.Equal) {
 					t = l.lex();
 					mustBe(t, TokenType.String);
 					attributess.add(new AttributeTargetSpecific(getString(orig), getString(t)));
-				}else {
+				} else {
 					attributess.add(new AttributeTargetSpecific(getString(t), null));
 					l.unlex();
 				}
@@ -411,10 +435,9 @@ public class Parser {
 	 * Parse unnamed_addr attribute. Currently does nothing.
 	 * 
 	 * @param t
-	 * @param f
 	 * @return
 	 */
-	private Token parseOptionalUnnamedAddr(Token t, Function f) {
+	private Token parseOptionalUnnamedAddr(Token t) {
 		if (t.type != TokenType.Keyword)
 			return t;
 		switch (((TokenKeyword) t).kwe) {
@@ -436,13 +459,13 @@ public class Parser {
 	private Instruction parseInstruction(Token t, Function f) {
 		// Check if it's an assignment
 		String destination = null;
-		Variable dest=  null;
+		Variable dest = null;
 		if (t.type == TokenType.LocalVariable) {
 			destination = ((TokenLocalVariable) t).name;
 			mustBe(l.lex(), TokenType.Equal);
 			t = l.lex();
-			dest= new LocalVariable(destination, f);
-			f.lvars.put(destination, (LocalVariable)dest);
+			dest = new LocalVariable(destination, f);
+			f.lvars.put(destination, (LocalVariable) dest);
 		}
 		mustBe(t, TokenType.Instruction);
 		Instruction insn = null;
@@ -451,7 +474,7 @@ public class Parser {
 			Type type = parseType(null);
 			Value value = parseValue(null, f);
 
-			insn =  new InstructionRet(type, value);
+			insn = new InstructionRet(type, value);
 			break;
 		}
 		case STORE: {
@@ -479,7 +502,7 @@ public class Parser {
 				}
 			}
 			l.unlex();
-			insn =  new InstructionStore(atomic, isVolatile, type, value, pointerType, pointer, align, nontemporal,
+			insn = new InstructionStore(atomic, isVolatile, type, value, pointerType, pointer, align, nontemporal,
 					invariant);
 			break;
 		}
@@ -522,7 +545,7 @@ public class Parser {
 				break;
 			}
 			l.unlex();
-			insn =  new InstructionAlloca(inalloca, type, numElementsType, numElements, align, addrspace);
+			insn = new InstructionAlloca(inalloca, type, numElementsType, numElements, align, addrspace);
 			break;
 		}
 		default:
@@ -602,7 +625,7 @@ public class Parser {
 		mustBe(t, TokenType.RParen);
 		t = l.lex();
 
-		t = parseOptionalUnnamedAddr(t, f);
+		t = parseOptionalUnnamedAddr(t);
 		t = parseOptionalFunctionAttributes(t, f);
 		mustBe(t, TokenType.LBrace);
 
@@ -622,12 +645,50 @@ public class Parser {
 				mustBe(l.lex(), TokenType.Exclaim);
 				mustBe(l.lex(), TokenType.LBrace);
 				t = l.lex();
-				
+
 				// TODO: read metadata
-				while(t.type != TokenType.RBrace) t = l.lex();
+				while (t.type != TokenType.RBrace)
+					t = l.lex();
 				break;
 			case GlobalVariable: {
 				mustBe(l.lex(), TokenType.Equal);
+				t = l.lex();
+				GlobalVariable g = new GlobalVariable();
+				t = parseOptionalLinkage(t, g.visibility);
+				t = parseTLSModel(t);
+				t = parseOptionalUnnamedAddr(t);
+				mustBe(t, TokenType.Keyword);
+
+				boolean constant = is(t, Keyword.CONSTANT);
+				// if(!constant) global = true
+				Type typ = parseType(null);
+				Value v = parseValue(null, null);
+				int align = 1;
+
+				// Parse ending attributes
+				t = l.lex();
+				while (t.type == TokenType.Comma) {
+					t = l.lex();
+					if (t.type == TokenType.Metadata)
+						throw new UnsupportedOperationException("TODO: metadata");
+					if(t.type == TokenType.Keyword) {
+						switch(((TokenKeyword)t).kwe) {
+						case SECTION: 
+							mustBe(l.lex(), TokenType.String);
+							break;
+						case COMDAT:
+							throw new UnsupportedOperationException("TODO: comdat");
+						case ALIGN: 
+							align = getInteger(l.lex());
+							break;
+						default:
+							throw new IllegalStateException("Illegal keyword after global variable definition");
+						}
+					}else // Just skip the token, I guess
+						break;
+					t = l.lex();
+				}
+				l.unlex();
 				break;
 			}
 			case Keyword: {
@@ -670,9 +731,9 @@ public class Parser {
 					mustBe(l.lex(), TokenType.LBrace);
 					t = l.lex();
 					AttributeList attrs = new AttributeList();
-					while (t.type != TokenType.RBrace) 
+					while (t.type != TokenType.RBrace)
 						t = parseOptionalFunctionAttributes(t, attrs);
-					m.attributes.put(((TokenAttributeGroup)temp).id, attrs);
+					m.attributes.put(((TokenAttributeGroup) temp).id, attrs);
 					break;
 				}
 				case SOURCE_FILENAME: // i dont care
