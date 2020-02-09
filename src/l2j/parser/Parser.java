@@ -286,10 +286,10 @@ public class Parser {
 		Type result = null;
 		switch (t.type) {
 		case LBracket: {
-			// [u8 x 32]
-			Type type = parseType(null);
-			mustBe(l.lex(), Keyword.X);
+			// [32 x i8]
 			int count = getInteger(l.lex());
+			mustBe(l.lex(), Keyword.X);
+			Type type = parseType(null);
 			mustBe(l.lex(), TokenType.RBracket);
 			result = new ArrayType(type, count);
 			break;

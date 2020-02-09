@@ -78,7 +78,7 @@ public class Lexer {
 	}
 
 	private boolean tokenEnd(char chr) {
-		return chr == 0 || chr == ' ' || chr == '\t' || chr == '\r' || chr == '\n' || chr == ';' || chr == ',' || chr == '*';
+		return chr == 0 || chr == ' ' || chr == '\t' || chr == '\r' || chr == '\n' || chr == ';' || chr == ',' || chr == '*' || chr == ']';
 	}
 
 	private static boolean isNumber(char n) {
