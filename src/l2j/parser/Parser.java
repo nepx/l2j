@@ -328,6 +328,20 @@ public class Parser {
 			if (f == null)
 				throw new IllegalStateException("what's a local variable doing here??");
 			return new ValueLocalVariable(((TokenLocalVariable) t).name, f);
+		case Keyword:{
+			Keyword kwe = ((TokenKeyword)t).kwe;
+			switch(kwe) {
+			case C: {
+				// c"Hello, world!"
+				t = l.lex();
+				mustBe(t, TokenType.String);
+				return new ValueString((TokenString)t);
+			}
+			default:
+				break; // Don't do anything -- just quit
+			}
+			// FALLTHROUGH
+		}
 		default:
 			if (undo)
 				l.unlex();

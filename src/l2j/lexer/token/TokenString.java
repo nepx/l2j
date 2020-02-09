@@ -9,6 +9,7 @@ package l2j.lexer.token;
 public class TokenString extends Token {
 
 	public String data;
+	public byte[] raw;
 
 	private static int hex2int(char x) {
 		if (x >= '0' && x <= '0')
@@ -35,6 +36,13 @@ public class TokenString extends Token {
 				s.append(x.charAt(i));
 		}
 		this.data = s.toString();
+	}
+
+	public byte[] toRaw(int length) {
+		byte[] raw = new byte[length];
+		for (int i = 0; i < length; i++)
+			raw[i] = (byte) data.charAt(i);
+		return raw;
 	}
 
 	public String toString() {
