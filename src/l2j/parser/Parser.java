@@ -197,10 +197,9 @@ public class Parser {
 	 * Parse optional calling convention
 	 * 
 	 * @param t
-	 * @param f
 	 * @return
 	 */
-	private Token parseOptionalCallingConvention(Token t, Function f) {
+	private Token parseOptionalCallingConvention(Token t) {
 		if (t.type != TokenType.Keyword)
 			return t;
 		switch (((TokenKeyword) t).kwe) {
@@ -438,10 +437,10 @@ public class Parser {
 	 * @param f
 	 * @return
 	 */
-	private Token parseOptionalReturnAttributes(Token t, Function f) {
+	private Token parseOptionalReturnAttributes(Token t, ArrayList<Attribute> f) {
 		out: while (true) {
 			if (t.type == TokenType.String)
-				t = parseStringAttribute((TokenString) t, f.returnAttributes);
+				t = parseStringAttribute((TokenString) t, f);
 			else {
 				if (t.type != TokenType.Keyword)
 					break;
@@ -449,10 +448,10 @@ public class Parser {
 				default:
 					break out;
 				case ALIGN:
-					parseAlignment(f.returnAttributes);
+					parseAlignment(f);
 					break;
 				case BYVAL:
-					parseByval(f.returnAttributes);
+					parseByval(f);
 					break;
 				// TODO: Add more
 				}
@@ -460,6 +459,34 @@ public class Parser {
 			t = l.lex();
 		}
 		return t;
+	}
+	
+	/**
+	 * Parse fast math flags
+	 * @param t
+	 * @return
+	 */
+	private Token parseFastMathFlags(Token t) {
+		if(t == null) t = l.lex();
+		out: while(true) {
+			if(t.type != TokenType.Keyword) break;
+			Keyword kwe = ((TokenKeyword)t).kwe;
+			switch(kwe) {
+			case NNAN:
+			case NINF:
+			case NSZ:
+			case ARCP:
+			case CONTRACT:
+			case AFN:
+			case REASSOC:
+			case FAST:
+				t = l.lex();
+				continue;
+			default: 
+				break out;
+			}
+		}
+	return t;
 	}
 
 	/**
@@ -579,6 +606,14 @@ public class Parser {
 			insn = new InstructionAlloca(inalloca, type, numElementsType, numElements, align, addrspace);
 			break;
 		}
+		case CALL: {
+			t = parseFastMathFlags(t);
+			t = parseOptionalCallingConvention(t);
+			Type returnType = parseType(t),
+				 fnty = parseType(t);
+			insn = new InstructionCall();
+			break;
+		}
 		default:
 			throw new UnsupportedOperationException("Unknown instruction: " + ((TokenInstruction) t).kwe);
 		}
@@ -622,8 +657,8 @@ public class Parser {
 	 */
 	private Token parseFunctionHeader(Token t, Function f) {
 		t = parseOptionalLinkage(t, f.visibillity);
-		t = parseOptionalCallingConvention(t, f);
-		t = parseOptionalReturnAttributes(t, f);
+		t = parseOptionalCallingConvention(t);
+		t = parseOptionalReturnAttributes(t, f.returnAttributes);
 
 		f.returnType = parseType(t);
 		t = l.lex();
