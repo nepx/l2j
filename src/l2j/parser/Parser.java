@@ -38,11 +38,12 @@ public class Parser {
 		if (t.type != k)
 			throw new IllegalStateException("Expected " + k.toString() + ", got " + t.type.toString());
 	}
+
 	private static void mustBe(Token t, Keyword k) {
 		if (t.type != TokenType.Keyword)
 			throw new IllegalStateException("Expected Keyword, got " + t.type.toString());
-		TokenKeyword kw = (TokenKeyword)t;
-		if(kw.kwe != k)
+		TokenKeyword kw = (TokenKeyword) t;
+		if (kw.kwe != k)
 			throw new IllegalStateException("Expected " + kw.kwe.toString() + ", got " + t.type.toString());
 	}
 
@@ -327,14 +328,14 @@ public class Parser {
 			if (f == null)
 				throw new IllegalStateException("what's a local variable doing here??");
 			return new ValueLocalVariable(((TokenLocalVariable) t).name, f);
-		case Keyword:{
-			Keyword kwe = ((TokenKeyword)t).kwe;
-			switch(kwe) {
+		case Keyword: {
+			Keyword kwe = ((TokenKeyword) t).kwe;
+			switch (kwe) {
 			case C: {
 				// c"Hello, world!"
 				t = l.lex();
 				mustBe(t, TokenType.String);
-				return new ValueString((TokenString)t);
+				return new ValueString((TokenString) t);
 			}
 			default:
 				break; // Don't do anything -- just quit
@@ -460,18 +461,21 @@ public class Parser {
 		}
 		return t;
 	}
-	
+
 	/**
 	 * Parse fast math flags
+	 * 
 	 * @param t
 	 * @return
 	 */
 	private Token parseFastMathFlags(Token t) {
-		if(t == null) t = l.lex();
-		out: while(true) {
-			if(t.type != TokenType.Keyword) break;
-			Keyword kwe = ((TokenKeyword)t).kwe;
-			switch(kwe) {
+		if (t == null)
+			t = l.lex();
+		out: while (true) {
+			if (t.type != TokenType.Keyword)
+				break;
+			Keyword kwe = ((TokenKeyword) t).kwe;
+			switch (kwe) {
 			case NNAN:
 			case NINF:
 			case NSZ:
@@ -482,11 +486,11 @@ public class Parser {
 			case FAST:
 				t = l.lex();
 				continue;
-			default: 
+			default:
 				break out;
 			}
 		}
-	return t;
+		return t;
 	}
 
 	/**
@@ -607,10 +611,23 @@ public class Parser {
 			break;
 		}
 		case CALL: {
+			t=l.lex();
 			t = parseFastMathFlags(t);
 			t = parseOptionalCallingConvention(t);
-			Type returnType = parseType(t),
-				 fnty = parseType(t);
+			Type returnType = parseType(t);
+			if(returnType == null) throw new IllegalStateException("Expected type");
+
+			Value fnptrval = parseValue(null, f);
+			ArrayList<Value> args = new ArrayList<Value>();
+			mustBe(l.lex(), TokenType.LParen);
+			t = l.lex();
+			while (t.type != TokenType.RParen) {
+				t = l.lex();
+				Value x = parseValue(t, f);
+				if (x == null)
+					throw new IllegalStateException("Expected parameter inside argument list");
+				args.add(x);
+			}
 			insn = new InstructionCall();
 			break;
 		}
@@ -737,20 +754,20 @@ public class Parser {
 					t = l.lex();
 					if (t.type == TokenType.Metadata)
 						throw new UnsupportedOperationException("TODO: metadata");
-					if(t.type == TokenType.Keyword) {
-						switch(((TokenKeyword)t).kwe) {
-						case SECTION: 
+					if (t.type == TokenType.Keyword) {
+						switch (((TokenKeyword) t).kwe) {
+						case SECTION:
 							mustBe(l.lex(), TokenType.String);
 							break;
 						case COMDAT:
 							throw new UnsupportedOperationException("TODO: comdat");
-						case ALIGN: 
+						case ALIGN:
 							align = getInteger(l.lex());
 							break;
 						default:
 							throw new IllegalStateException("Illegal keyword after global variable definition");
 						}
-					}else // Just skip the token, I guess
+					} else // Just skip the token, I guess
 						break;
 					t = l.lex();
 				}
