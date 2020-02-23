@@ -53,6 +53,10 @@ public class Parser {
 		return ((TokenKeyword) t).kwe == k;
 	}
 
+	private static boolean is(Token t, TokenType tt) {
+		return t.type == tt;
+	}
+
 	private static int getInteger(Token t) {
 		if (t.type != TokenType.IntegerConstant)
 			throw new IllegalStateException("Expected integer constant");
@@ -308,6 +312,13 @@ public class Parser {
 		return result;
 	}
 
+	private Object parseGlobalValueVector(Token t) {
+		// TODO
+		if (t.type == TokenType.RBrace || t.type == TokenType.RBracket)
+			return null;
+		throw new UnsupportedOperationException("TODO: parse global value vector");
+	}
+
 	/**
 	 * Parse a value, either a constant or a local variable
 	 * 
@@ -328,6 +339,26 @@ public class Parser {
 			if (f == null)
 				throw new IllegalStateException("what's a local variable doing here??");
 			return new ValueLocalVariable(((TokenLocalVariable) t).name, f);
+		case Instruction: {
+			// "getelementptr"
+			InstructionTypes kwe = ((TokenInstruction) t).kwe;
+			switch (kwe) {
+			case GETELEMENTPTR: {
+				t = l.lex();
+				boolean inbounds = is(t, Keyword.INBOUNDS);
+				if (inbounds)
+					t = l.lex();
+				mustBe(t, TokenType.Comma);
+				Type typ = parseType(l.lex());
+				t = l.lex();
+				Object o = parseGlobalValueVector(t);
+				if (o != null)
+					t = l.lex();
+				break;
+			}
+			}
+			break;
+		}
 		case Keyword: {
 			Keyword kwe = ((TokenKeyword) t).kwe;
 			switch (kwe) {
@@ -611,17 +642,20 @@ public class Parser {
 			break;
 		}
 		case CALL: {
-			t=l.lex();
+			t = l.lex();
 			t = parseFastMathFlags(t);
 			t = parseOptionalCallingConvention(t);
 			Type returnType = parseType(t);
-			if(returnType == null) throw new IllegalStateException("Expected type");
+			if (returnType == null)
+				throw new IllegalStateException("Expected type");
 
 			Value fnptrval = parseValue(null, f);
 			ArrayList<Value> args = new ArrayList<Value>();
 			mustBe(l.lex(), TokenType.LParen);
 			t = l.lex();
 			while (t.type != TokenType.RParen) {
+				t = l.lex();
+				Type paramtype = parseType(t);
 				t = l.lex();
 				Value x = parseValue(t, f);
 				if (x == null)
