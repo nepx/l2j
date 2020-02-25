@@ -12,11 +12,11 @@ import l2j.lexer.token.*;
 public class Lexer {
 	private byte[] data;
 	private int pos, startPos;
-	
+
 	private int lastTokenStart;
-	
+
 	/**
-	 * Moves the lexer position back before the last token was parsed. 
+	 * Moves the lexer position back before the last token was parsed.
 	 */
 	public void unlex() {
 		pos = lastTokenStart;
@@ -64,7 +64,7 @@ public class Lexer {
 	private void skip() {
 		pos++;
 	}
-	
+
 	private void back() {
 		pos--;
 	}
@@ -73,12 +73,17 @@ public class Lexer {
 		return (char) data[pos];
 	}
 
+	private char at(int offset) {
+		return (char) data[pos + offset];
+	}
+
 	public Lexer(byte[] input) {
 		data = input;
 	}
 
 	private boolean tokenEnd(char chr) {
-		return chr == 0 || chr == ' ' || chr == '\t' || chr == '\r' || chr == '\n' || chr == ';' || chr == ',' || chr == '*' || chr == ']';
+		return chr == 0 || chr == ' ' || chr == '\t' || chr == '\r' || chr == '\n' || chr == ';' || chr == ','
+				|| chr == '*' || chr == ']';
 	}
 
 	private static boolean isNumber(char n) {
@@ -178,29 +183,33 @@ public class Lexer {
 	 * @return
 	 */
 	static private boolean varChar(char x) {
-		return x == '-' || x == '.' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <='9') || x == '\\';
+		return x == '-' || x == '.' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <= '9')
+				|| x == '\\';
 	}
+
 	/**
 	 * 
 	 * @param x
 	 * @return
 	 */
 	static private boolean metadataChar(char x) {
-		return x == '.' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <='9');
+		return x == '.' || (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x >= '0' && x <= '9');
 	}
-	
+
 	/**
 	 * Lex attribute group: #[0-9]+
+	 * 
 	 * @return
 	 */
 	private Token lexAttributeGroup() {
 		start(0);
 		char current = next();
-		while(isNumber(current)) current=next();
+		while (isNumber(current))
+			current = next();
 		prev();
 		return new TokenAttributeGroup(Integer.parseInt(slice()));
 	}
-	
+
 	/**
 	 * Parse variable: [%@][-a-zA-Z$._][-a-zA-Z$._0-9]*
 	 * 
@@ -209,39 +218,44 @@ public class Lexer {
 	 */
 	private Token parseVar(boolean isGlobal) {
 		start(0);
-		if(!varChar(next())) throw new IllegalStateException("Variable name too short");
-		while(varChar(next()));
+		if (!varChar(next()))
+			throw new IllegalStateException("Variable name too short");
+		while (varChar(next()))
+			;
 		prev();
 		return isGlobal ? new TokenGlobalVariable(slice()) : new TokenLocalVariable(slice());
 	}
-	
+
 	/**
-	 * Parse metadata node
-	 * ![A-Za-z0-9.]
+	 * Parse metadata node ![A-Za-z0-9.]
+	 * 
 	 * @return
 	 */
 	private Token lexMetadata() {
 		start(0);
 		char cur = next();
-		while(metadataChar(cur)) cur = next();
+		while (metadataChar(cur))
+			cur = next();
 		prev();
-		if(startPos == pos) return new TokenSymbol('!', TokenType.Exclaim); // Just a single '!'
+		if (startPos == pos)
+			return new TokenSymbol('!', TokenType.Exclaim); // Just a single '!'
 		return new TokenMetadata(slice());
 	}
-	
+
 	/**
-	 * Parse integer constant
-	 * [0-9]+
+	 * Parse integer constant [0-9]+
+	 * 
 	 * @return
 	 */
 	private Token lexIntegerConstant() {
 		start(-1);
 		char cur = next();
-		while(isNumber(cur)) cur = next();
+		while (isNumber(cur))
+			cur = next();
 		prev();
 		return new TokenIntegerConstant(Integer.parseInt(slice()));
 	}
-	
+
 	private static Token TokenEOF = new TokenSymbol(' ', TokenType.EOF);
 
 	public Token lex() {
@@ -350,7 +364,12 @@ public class Lexer {
 				break out;
 			default:
 				if (symbols.containsKey(current)) {
-					res = new TokenSymbol(current, symbols.get(current));
+					if (current == '.' && at(0) == '.' && at(1) == '.') {
+						res = new TokenSymbol('.', TokenType.DotDotDot);
+						skip();
+						skip();
+					}else
+						res = new TokenSymbol(current, symbols.get(current));
 					break out;
 				}
 				throw new IllegalStateException(
@@ -797,6 +816,7 @@ public class Lexer {
 		instructions.put("catchpad", InstructionTypes.CATCHPAD);
 		instructions.put("cleanuppad", InstructionTypes.CLEANUPPAD);
 
+		symbols.put('.', TokenType.Dot);
 		symbols.put(',', TokenType.Comma);
 		symbols.put('=', TokenType.Equal);
 		symbols.put('(', TokenType.LParen);

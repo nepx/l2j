@@ -13,6 +13,7 @@ import l2j.module.function.*;
 import l2j.module.function.instruction.*;
 import l2j.module.types.*;
 import l2j.module.value.*;
+import l2j.module.value.ValueGetElementPtr.TypeValuePair;
 
 /**
  * LLVM parser
@@ -306,8 +307,21 @@ public class Parser {
 		}
 		if (result == null)
 			return null;
-		while (l.lex().type == TokenType.Star)
+		t = l.lex();
+		while (t.type == TokenType.Star) {
 			result = new PointerType(result);
+			t = l.lex();
+		}
+		if(t.type == TokenType.LParen) {
+			ArrayList<Type> params = new ArrayList<Type>();
+			t = l.lex();
+			while (t.type != TokenType.RParen) {
+				params.add(parseType(t));
+				t = l.lex();
+				if(t.type == TokenType.Comma) t = l.lex();
+			}
+			l.lex();
+		}
 		l.unlex();
 		return result;
 	}
@@ -335,6 +349,8 @@ public class Parser {
 		switch (t.type) {
 		case IntegerConstant:
 			return new ValueConstant(getInteger(t));
+		case GlobalVariable:
+			return new ValueGlobalVariable(((TokenGlobalVariable) t).name);
 		case LocalVariable:
 			if (f == null)
 				throw new IllegalStateException("what's a local variable doing here??");
@@ -348,16 +364,28 @@ public class Parser {
 				boolean inbounds = is(t, Keyword.INBOUNDS);
 				if (inbounds)
 					t = l.lex();
-				mustBe(t, TokenType.Comma);
+				mustBe(t, TokenType.LParen);
 				Type typ = parseType(l.lex());
 				t = l.lex();
 				Object o = parseGlobalValueVector(t);
 				if (o != null)
 					t = l.lex();
-				break;
+				Type ptrType = parseType(t);
+				Value v = parseValue(null, f);
+				
+				// Create a list of type value pairs
+				ArrayList<ValueGetElementPtr.TypeValuePair> tvps = new ArrayList<ValueGetElementPtr.TypeValuePair>();
+				t = l.lex();
+				while(t.type != TokenType.RParen) {
+					ValueGetElementPtr.TypeValuePair tvp = new ValueGetElementPtr.TypeValuePair();
+					tvp.type = parseType(t);
+					tvp.value = parseValue(null, f);
+					t = l.lex();
+				}
+				return new ValueGetElementPtr(inbounds,ptrType, v, tvps);
 			}
 			}
-			break;
+			throw new UnsupportedOperationException("unknown value keyword");
 		}
 		case Keyword: {
 			Keyword kwe = ((TokenKeyword) t).kwe;
@@ -648,15 +676,15 @@ public class Parser {
 			Type returnType = parseType(t);
 			if (returnType == null)
 				throw new IllegalStateException("Expected type");
-
+			
 			Value fnptrval = parseValue(null, f);
 			ArrayList<Value> args = new ArrayList<Value>();
 			mustBe(l.lex(), TokenType.LParen);
-			t = l.lex();
 			while (t.type != TokenType.RParen) {
 				t = l.lex();
 				Type paramtype = parseType(t);
 				t = l.lex();
+				System.out.println(t);
 				Value x = parseValue(t, f);
 				if (x == null)
 					throw new IllegalStateException("Expected parameter inside argument list");

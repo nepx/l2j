@@ -14,6 +14,7 @@ public class TokenSymbol extends Token {
 	}
 	
 	public String toString() {
+		if(type == TokenType.DotDotDot) return "...";
 		return String.valueOf(symbol);
 	}
 }

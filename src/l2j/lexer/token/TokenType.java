@@ -25,5 +25,7 @@ public enum TokenType {
 	Hash,
 	Exclaim,
 	LBracket,
-	RBracket
+	RBracket,
+	Dot,
+	DotDotDot // "..."
 }
