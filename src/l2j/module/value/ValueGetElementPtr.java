@@ -8,15 +8,13 @@ public class ValueGetElementPtr extends Value {
 
 	public boolean inbounds;
 	public Type type;
-	public Value value;
-	public ArrayList<TypeValuePair> tvps;
+	public ArrayList<GlobalValueVector> list;
 
-	public ValueGetElementPtr(boolean inbounds, Type type, Value v, ArrayList<TypeValuePair> al) {
+	public ValueGetElementPtr(boolean inbounds, Type type, ArrayList<GlobalValueVector> list) {
 		super(ValueType.GetElementPtr);
 		this.inbounds = inbounds;
 		this.type = type;
-		this.value = v;
-		this.tvps = al;
+		this.list = list;
 	}
 
 	public String toString() {
@@ -27,6 +25,13 @@ public class ValueGetElementPtr extends Value {
 		b.append("(");
 		b.append(type.toString());
 		b.append(", ");
+		int size = list.size();
+		for (int i = 0; i < size; i++) {
+			if (i != 0)
+				b.append(", ");
+			b.append(list.get(i));
+		}
+		b.append(")");
 		return b.toString();
 	}
 

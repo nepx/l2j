@@ -4,22 +4,25 @@ import java.util.ArrayList;
 
 import l2j.module.attributes.Attribute;
 import l2j.module.types.Type;
+import l2j.module.value.Value;
 
 public class InstructionCall extends Instruction {
-	public ArrayList<Attribute> attributes;
 
-	public InstructionCall() {
+	public Type returnType;
+	public Value fnptrval;
+	public ArrayList<Value> args;
+
+	public InstructionCall(Type returnType, Value fnptrval, ArrayList<Value> args) {
 		super(InstructionType.Call);
-
+		this.returnType = returnType;
+		this.fnptrval = fnptrval;
+		this.args = args;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder s = new StringBuilder();
 		s.append("call ");
-		for (int i = 0; i < attributes.size(); i++)
-			s.append(attributes.get(i).toString());
-
 		return s.toString();
 	}
 

@@ -328,12 +328,12 @@ public class Parser {
 	}
 
 	private ArrayList<GlobalValueVector> parseGlobalValueVector(Token t) {
-		// TODO
 		if (t.type == TokenType.RBrace || t.type == TokenType.RBracket)
 			return null;
 		ArrayList<GlobalValueVector> list = new ArrayList<GlobalValueVector>();
 		while (true) {
 			boolean inrange = is(t, Keyword.INRANGE);
+			if(inrange) t=l.lex();
 			Type type = parseType(t);
 			t = l.lex();
 			Value val = parseValue(t, null);
@@ -343,6 +343,7 @@ public class Parser {
 				l.unlex();
 				return list;
 			}
+			t = l.lex(); // Skip comma and move to the next keyword, which will be used at top of loop
 		}
 	}
 
@@ -379,23 +380,12 @@ public class Parser {
 					t = l.lex();
 				mustBe(t, TokenType.LParen);
 				Type typ = parseType(l.lex());
+				mustBe(l.lex(), TokenType.Comma);
 				t = l.lex();
-				Object o = parseGlobalValueVector(t);
+				ArrayList<GlobalValueVector> o = parseGlobalValueVector(t);
 				if (o != null)
 					t = l.lex();
-				Type ptrType = parseType(t);
-				Value v = parseValue(null, f);
-
-				// Create a list of type value pairs
-				ArrayList<ValueGetElementPtr.TypeValuePair> tvps = new ArrayList<ValueGetElementPtr.TypeValuePair>();
-				t = l.lex();
-				while (t.type != TokenType.RParen) {
-					ValueGetElementPtr.TypeValuePair tvp = new ValueGetElementPtr.TypeValuePair();
-					tvp.type = parseType(t);
-					tvp.value = parseValue(null, f);
-					t = l.lex();
-				}
-				return new ValueGetElementPtr(inbounds, ptrType, v, tvps);
+				return new ValueGetElementPtr(inbounds, typ, o);
 			}
 			}
 			throw new UnsupportedOperationException("unknown value keyword: " + kwe.toString());
@@ -693,17 +683,19 @@ public class Parser {
 			Value fnptrval = parseValue(null, f);
 			ArrayList<Value> args = new ArrayList<Value>();
 			mustBe(l.lex(), TokenType.LParen);
+			t = l.lex();
 			while (t.type != TokenType.RParen) {
-				t = l.lex();
+				System.out.println("type: " + t);
 				Type paramtype = parseType(t);
 				t = l.lex();
-				System.out.println(t);
+				System.out.println("val: " + t);
 				Value x = parseValue(t, f);
 				if (x == null)
 					throw new IllegalStateException("Expected parameter inside argument list");
 				args.add(x);
+				t = l.lex();
 			}
-			insn = new InstructionCall();
+			insn = new InstructionCall(returnType, fnptrval, args);
 			break;
 		}
 		default:
