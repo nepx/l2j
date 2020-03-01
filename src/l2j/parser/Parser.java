@@ -312,13 +312,14 @@ public class Parser {
 			result = new PointerType(result);
 			t = l.lex();
 		}
-		if(t.type == TokenType.LParen) {
+		if (t.type == TokenType.LParen) {
 			ArrayList<Type> params = new ArrayList<Type>();
 			t = l.lex();
 			while (t.type != TokenType.RParen) {
 				params.add(parseType(t));
 				t = l.lex();
-				if(t.type == TokenType.Comma) t = l.lex();
+				if (t.type == TokenType.Comma)
+					t = l.lex();
 			}
 			l.lex();
 		}
@@ -326,11 +327,23 @@ public class Parser {
 		return result;
 	}
 
-	private Object parseGlobalValueVector(Token t) {
+	private ArrayList<GlobalValueVector> parseGlobalValueVector(Token t) {
 		// TODO
 		if (t.type == TokenType.RBrace || t.type == TokenType.RBracket)
 			return null;
-		throw new UnsupportedOperationException("TODO: parse global value vector");
+		ArrayList<GlobalValueVector> list = new ArrayList<GlobalValueVector>();
+		while (true) {
+			boolean inrange = is(t, Keyword.INRANGE);
+			Type type = parseType(t);
+			t = l.lex();
+			Value val = parseValue(t, null);
+			t = l.lex();
+			list.add(new GlobalValueVector(type, val, inrange));
+			if (t.type != TokenType.Comma) {
+				l.unlex();
+				return list;
+			}
+		}
 	}
 
 	/**
@@ -372,20 +385,20 @@ public class Parser {
 					t = l.lex();
 				Type ptrType = parseType(t);
 				Value v = parseValue(null, f);
-				
+
 				// Create a list of type value pairs
 				ArrayList<ValueGetElementPtr.TypeValuePair> tvps = new ArrayList<ValueGetElementPtr.TypeValuePair>();
 				t = l.lex();
-				while(t.type != TokenType.RParen) {
+				while (t.type != TokenType.RParen) {
 					ValueGetElementPtr.TypeValuePair tvp = new ValueGetElementPtr.TypeValuePair();
 					tvp.type = parseType(t);
 					tvp.value = parseValue(null, f);
 					t = l.lex();
 				}
-				return new ValueGetElementPtr(inbounds,ptrType, v, tvps);
+				return new ValueGetElementPtr(inbounds, ptrType, v, tvps);
 			}
 			}
-			throw new UnsupportedOperationException("unknown value keyword");
+			throw new UnsupportedOperationException("unknown value keyword: " + kwe.toString());
 		}
 		case Keyword: {
 			Keyword kwe = ((TokenKeyword) t).kwe;
@@ -676,7 +689,7 @@ public class Parser {
 			Type returnType = parseType(t);
 			if (returnType == null)
 				throw new IllegalStateException("Expected type");
-			
+
 			Value fnptrval = parseValue(null, f);
 			ArrayList<Value> args = new ArrayList<Value>();
 			mustBe(l.lex(), TokenType.LParen);
