@@ -333,7 +333,8 @@ public class Parser {
 		ArrayList<GlobalValueVector> list = new ArrayList<GlobalValueVector>();
 		while (true) {
 			boolean inrange = is(t, Keyword.INRANGE);
-			if(inrange) t=l.lex();
+			if (inrange)
+				t = l.lex();
 			Type type = parseType(t);
 			t = l.lex();
 			Value val = parseValue(t, null);
@@ -485,7 +486,7 @@ public class Parser {
 		}
 	}
 
-	private Token parseOptionalFunctionAttributes(Token t, Function f) {
+	private Token parseOptionalFunctionAttributes(Token t, Callable f) {
 		return parseOptionalFunctionAttributes(t, f.attributess, false);
 	}
 
@@ -735,11 +736,12 @@ public class Parser {
 	/**
 	 * Parse a function header, as described by the LLVM specification
 	 * 
-	 * @param t Token
-	 * @param f Function
+	 * @param t                 Token
+	 * @param f                 Function
+	 * @param parseFunctionBody self-explanatory
 	 * @return Next token in stream
 	 */
-	private Token parseFunctionHeader(Token t, Function f) {
+	private Token parseFunctionHeader(Token t, Callable f, boolean parseFunctionBody) {
 		t = parseOptionalLinkage(t, f.visibillity);
 		t = parseOptionalCallingConvention(t);
 		t = parseOptionalReturnAttributes(t, f.returnAttributes);
@@ -779,7 +781,8 @@ public class Parser {
 		t = parseOptionalFunctionAttributes(t, f);
 		mustBe(t, TokenType.LBrace);
 
-		parseFunctionBody(l.lex(), f);
+		if (parseFunctionBody)
+			parseFunctionBody(l.lex(), (Function) f);
 
 		return t;
 	}
@@ -868,11 +871,20 @@ public class Parser {
 					Function f = new Function();
 					t = l.lex();
 
-					parseFunctionHeader(t, f);
+					parseFunctionHeader(t, f, true);
 
 					// Add the function to our list.
 					m.functions.add(f);
 					break;
+				}
+				case DECLARE: {
+					ExternalFunction f = new ExternalFunction();
+					t = l.lex();
+
+					parseFunctionHeader(t, f, false);
+
+					// Add the function to our list.
+					m.functions.add(f);
 				}
 				case ATTRIBUTES: {
 					Token temp;
