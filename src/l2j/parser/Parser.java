@@ -475,8 +475,9 @@ public class Parser {
 						attributess.add(new AttributeGeneric(attrsTable.get(kw.kwe)));
 						break;
 					}
-					throw new UnsupportedOperationException("TODO: Attr " + kw.kwe.toString());
-				}
+					l.unlex();//throw new UnsupportedOperationException("TODO: Attr " + kw.kwe.toString());
+						return t;
+			}
 				break;
 			}
 			default:
@@ -762,15 +763,13 @@ public class Parser {
 
 			t = l.lex();
 			// TODO: Parse attributes
-
-			t = l.lex();
 			if (t.type == TokenType.LocalVariable) {
 				param.name = ((TokenLocalVariable) t).name;
 			} else {
 				if (t.type == TokenType.Comma)
 					t = l.lex();
 				else if (t.type == TokenType.Keyword)
-					throw new IllegalStateException("TODO: Parse attributes");
+					throw new IllegalStateException("TODO: Parse attributes [" + t + "]");
 			}
 		}
 
@@ -779,11 +778,11 @@ public class Parser {
 
 		t = parseOptionalUnnamedAddr(t);
 		t = parseOptionalFunctionAttributes(t, f);
-		mustBe(t, TokenType.LBrace);
+		if (parseFunctionBody) {
+			mustBe(t, TokenType.LBrace);
 
-		if (parseFunctionBody)
 			parseFunctionBody(l.lex(), (Function) f);
-
+		}
 		return t;
 	}
 
