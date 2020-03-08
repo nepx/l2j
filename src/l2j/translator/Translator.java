@@ -168,8 +168,7 @@ public class Translator {
 					break;
 				}
 				default:
-					continue;
-				// throw new UnsupportedOperationException("Unknown operation: " + insn.type);
+					throw new UnsupportedOperationException("Unknown operation: " + insn.type);
 				}
 			}
 		}

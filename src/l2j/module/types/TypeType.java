@@ -4,5 +4,6 @@ public enum TypeType {
 	Integer,
 	Pointer,
 	Void,
-	Array
+	Array,
+	FunctionPointer
 }

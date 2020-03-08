@@ -314,13 +314,19 @@ public class Parser {
 		}
 		if (t.type == TokenType.LParen) {
 			ArrayList<Type> params = new ArrayList<Type>();
+			boolean varargs = false;
 			t = l.lex();
 			while (t.type != TokenType.RParen) {
-				params.add(parseType(t));
+				if(t.type == TokenType.DotDotDot)
+					varargs = true;
+				else 
+					params.add(parseType(t));
+				
 				t = l.lex();
 				if (t.type == TokenType.Comma)
 					t = l.lex();
 			}
+			result = new FunctionPointerType(result, params, varargs);
 			l.lex();
 		}
 		l.unlex();
