@@ -317,11 +317,11 @@ public class Parser {
 			boolean varargs = false;
 			t = l.lex();
 			while (t.type != TokenType.RParen) {
-				if(t.type == TokenType.DotDotDot)
+				if (t.type == TokenType.DotDotDot)
 					varargs = true;
-				else 
+				else
 					params.add(parseType(t));
-				
+
 				t = l.lex();
 				if (t.type == TokenType.Comma)
 					t = l.lex();
@@ -481,9 +481,9 @@ public class Parser {
 						attributess.add(new AttributeGeneric(attrsTable.get(kw.kwe)));
 						break;
 					}
-					l.unlex();//throw new UnsupportedOperationException("TODO: Attr " + kw.kwe.toString());
-						return t;
-			}
+					l.unlex();// throw new UnsupportedOperationException("TODO: Attr " + kw.kwe.toString());
+					return t;
+				}
 				break;
 			}
 			default:
@@ -599,6 +599,8 @@ public class Parser {
 			dest = new LocalVariable(destination, f);
 			f.lvars.put(destination, (LocalVariable) dest);
 		}
+		if (is(t, TokenType.Keyword)) // For "tail call"
+			t = l.lex();
 		mustBe(t, TokenType.Instruction);
 		Instruction insn = null;
 		switch (((TokenInstruction) t).kwe) {
@@ -774,8 +776,19 @@ public class Parser {
 			} else {
 				if (t.type == TokenType.Comma)
 					t = l.lex();
-				else if (t.type == TokenType.Keyword)
-					throw new IllegalStateException("TODO: Parse attributes [" + t + "]");
+				else if (t.type == TokenType.Keyword) {
+					switch (((TokenKeyword) t).kwe) {
+					case NOCAPTURE:
+						param.flags |= Parameter.NOCAPTURE;
+						break;
+					case READONLY:
+						param.flags |= Parameter.READONLY;
+						break;
+					default:
+						throw new IllegalStateException("TODO: Parse attributes [" + t + "]");
+					}
+					t=l.lex();
+				}
 			}
 		}
 
@@ -890,6 +903,7 @@ public class Parser {
 
 					// Add the function to our list.
 					m.functions.add(f);
+					break;
 				}
 				case ATTRIBUTES: {
 					Token temp;

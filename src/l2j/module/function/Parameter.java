@@ -9,4 +9,8 @@ public class Parameter {
 	public Type type;
 	public ArrayList<Attribute> attrs = new ArrayList<Attribute>();
 	public String name;
+	public int flags = 0;
+
+	public static final int NOCAPTURE = (1 << 0);
+	public static final int READONLY = (1 << 1);
 }

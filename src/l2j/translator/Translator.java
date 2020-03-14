@@ -7,7 +7,7 @@ import l2j.module.Module;
 import l2j.module.function.Function;
 import l2j.module.function.BasicBlock;
 import l2j.module.function.instruction.*;
-import l2j.module.types.TypeType;
+import l2j.module.types.*;
 import l2j.module.value.*;
 
 /**
@@ -165,6 +165,13 @@ public class Translator {
 					InstructionRet ir = (InstructionRet) insn;
 					loadValue(cf, ir.value);
 					cf.returnInteger();
+					break;
+				}
+				case Call: {
+					InstructionCall call = (InstructionCall) insn;
+					Type t = call.returnType;
+					
+					// For non-varargs functions, we get arguments
 					break;
 				}
 				default:
