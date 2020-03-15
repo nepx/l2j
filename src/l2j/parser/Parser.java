@@ -436,6 +436,7 @@ public class Parser {
 	static {
 		attrsTable.put(Keyword.UWTABLE, AttributeType.Uwtable);
 		attrsTable.put(Keyword.NOUNWIND, AttributeType.Nounwind);
+		attrsTable.put(Keyword.NOFREE, AttributeType.Nofree);
 	};
 
 	/**

@@ -6,7 +6,8 @@ public enum AttributeType {
 	Group,
 	
 	TargetSpecific,
-	
+
 	Uwtable,
+	Nofree,
 	Nounwind
 }
