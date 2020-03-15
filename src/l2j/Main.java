@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Map;
 
 import l2j.lexer.Lexer;
 import l2j.module.Module;
@@ -50,16 +51,16 @@ public class Main {
 		Translator t = new Translator(m, basename);
 		int flen = m.functions.size();
 		System.out.println("Generating Jasmin assembly...");
-		for (int i = 0; i < flen; i++) {
-			Callable c = m.functions.get(i);
+		for (Map.Entry<String, Callable> entry : m.functions.entrySet()) {
+			Callable c = entry.getValue();
 			if (c instanceof Function)
 				t.translateFunction((Function) c);
 		}
 
 		System.out.println("Compiling Jasmin assembly...");
 		ClassFileCompiler comp = new ClassFileCompiler(basename);
-		for (int i = 0; i < flen; i++) {
-			Callable c = m.functions.get(i);
+		for (Map.Entry<String, Callable> entry : m.functions.entrySet()) {
+			Callable c = entry.getValue();
 			if (c instanceof Function)
 				comp.compile((Function) c);
 		}

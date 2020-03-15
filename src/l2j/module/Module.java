@@ -12,6 +12,6 @@ public class Module {
 	// Target triple and datalayout
 	public String targetTriple, datalayout;
 	
-	public ArrayList<Callable> functions = new  ArrayList<Callable>();
+	public HashMap<String, Callable> functions = new HashMap<String, Callable>();
 	public HashMap<Integer, AttributeList> attributes = new HashMap<Integer, AttributeList>();
 }

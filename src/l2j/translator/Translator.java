@@ -6,9 +6,11 @@ import java.util.Set;
 import l2j.module.Module;
 import l2j.module.function.Function;
 import l2j.module.function.BasicBlock;
+import l2j.module.function.Callable;
 import l2j.module.function.instruction.*;
 import l2j.module.types.*;
 import l2j.module.value.*;
+import l2j.runtime.BuiltinFunctions;
 
 /**
  * Things to do here...
@@ -63,8 +65,10 @@ public class Translator {
 	 * @param totalBytesAllocated
 	 */
 	private void procExitHandler(ClassFileEmitter cf, int totalBytesAllocated) {
-		cf.pushInt(totalBytesAllocated);
-		cf.invokeStatic("l2j/runtime/Memory/dealloca(I)V");
+		if (totalBytesAllocated != 0) {
+			cf.pushInt(totalBytesAllocated);
+			cf.invokeStatic("l2j/runtime/Memory/dealloca(I)V");
+		}
 	}
 
 	/**
@@ -72,7 +76,7 @@ public class Translator {
 	 * 
 	 * @param cf
 	 * @param f
-	 * @param sig      Method signature
+	 * @param sig Method signature
 	 */
 	private void generateCall(ClassFileEmitter cf, Function f, String sig) {
 		cf.createMethod("public", "call(I)I");
@@ -170,8 +174,34 @@ public class Translator {
 				case Call: {
 					InstructionCall call = (InstructionCall) insn;
 					Type t = call.returnType;
-					
-					// For non-varargs functions, we get arguments
+					Value v = call.fnptrval;
+					if (v.type != ValueType.GlobalVariable)
+						throw new UnsupportedOperationException("todo: fptr call");
+					else {
+						// Look up global variable entry in function list
+						// XXX -- some programs may try to call a function that isn't Callable
+						ValueGlobalVariable gv = (ValueGlobalVariable) v;
+						String name = gv.name, pkgpath;
+						Callable c = m.functions.get(gv.name);
+						if (c == null)
+							throw new IllegalStateException("function " + c + " not found");
+
+						// Check if it's an internal function that we implemented in Java
+						pkgpath = BuiltinFunctions.list.get(name);
+						if (pkgpath == null) {
+							// It's in our module
+							pkgpath = "l2j/generated/";
+						}
+						int size = call.args.size();
+						StringBuilder s=new StringBuilder();
+						for (int j = 0; j < size; j++) {
+							Value argv=call.args.get(i);
+							loadValue(cf, argv);
+						}
+						cf.invokeStatic(pkgpath + "/" + name.substring(1) + "(I)V");
+						System.out.println(pkgpath);
+					}
+					System.out.println(t);
 					break;
 				}
 				default:

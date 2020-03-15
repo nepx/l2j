@@ -895,7 +895,7 @@ public class Parser {
 					parseFunctionHeader(t, f, true);
 
 					// Add the function to our list.
-					m.functions.add(f);
+					m.functions.put(f.name, f);
 					break;
 				}
 				case DECLARE: {
@@ -905,7 +905,7 @@ public class Parser {
 					parseFunctionHeader(t, f, false);
 
 					// Add the function to our list.
-					m.functions.add(f);
+					m.functions.put(f.name, f);
 					break;
 				}
 				case ATTRIBUTES: {
