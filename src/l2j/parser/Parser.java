@@ -467,10 +467,10 @@ public class Parser {
 			}
 			case Keyword: {
 				TokenKeyword kw = (TokenKeyword) t;
-				t = l.lex();
 				switch (kw.kwe) {
 				case ALIGN:
 					if (ag) {
+						t = l.lex();
 						mustBe(t, TokenType.Equal);
 						t = l.lex();
 					}
@@ -695,10 +695,8 @@ public class Parser {
 			mustBe(l.lex(), TokenType.LParen);
 			t = l.lex();
 			while (t.type != TokenType.RParen) {
-				System.out.println("type: " + t);
 				Type paramtype = parseType(t);
 				t = l.lex();
-				System.out.println("val: " + t);
 				Value x = parseValue(t, f);
 				if (x == null)
 					throw new IllegalStateException("Expected parameter inside argument list");
@@ -770,13 +768,8 @@ public class Parser {
 			param.type = parseType(t);
 
 			t = l.lex();
-			// TODO: Parse attributes
-			if (t.type == TokenType.LocalVariable) {
-				param.name = ((TokenLocalVariable) t).name;
-			} else {
-				if (t.type == TokenType.Comma)
-					t = l.lex();
-				else if (t.type == TokenType.Keyword) {
+			while (true) {
+				if (t.type == TokenType.Keyword) {
 					switch (((TokenKeyword) t).kwe) {
 					case NOCAPTURE:
 						param.flags |= Parameter.NOCAPTURE;
@@ -787,9 +780,17 @@ public class Parser {
 					default:
 						throw new IllegalStateException("TODO: Parse attributes [" + t + "]");
 					}
-					t=l.lex();
-				}
+					t = l.lex();
+				} else
+					break;
 			}
+			// TODO: Parse attributes
+			if (t.type == TokenType.LocalVariable) {
+				param.name = ((TokenLocalVariable) t).name;
+				t = l.lex();
+			}
+			if (t.type == TokenType.Comma)
+				t = l.lex();
 		}
 
 		mustBe(t, TokenType.RParen);
@@ -801,7 +802,8 @@ public class Parser {
 			mustBe(t, TokenType.LBrace);
 
 			parseFunctionBody(l.lex(), (Function) f);
-		}
+		} else
+			l.unlex();
 		return t;
 	}
 
@@ -912,8 +914,9 @@ public class Parser {
 					mustBe(l.lex(), TokenType.LBrace);
 					t = l.lex();
 					AttributeList attrs = new AttributeList();
-					while (t.type != TokenType.RBrace)
-						t = parseOptionalFunctionAttributes(t, attrs);
+					t = parseOptionalFunctionAttributes(t, attrs);
+					if (t.type != TokenType.RBrace)
+						throw new IllegalStateException("expected rbrace");
 					m.attributes.put(((TokenAttributeGroup) temp).id, attrs);
 					break;
 				}
