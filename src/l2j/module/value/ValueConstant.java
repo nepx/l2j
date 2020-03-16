@@ -10,4 +10,8 @@ public class ValueConstant extends Value {
 	public String toString() {
 		return Integer.toString(value);
 	}
+
+	public char getJavaSignatureType() {
+		return 'I';
+	}
 }

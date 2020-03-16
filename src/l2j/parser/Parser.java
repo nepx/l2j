@@ -13,7 +13,6 @@ import l2j.module.function.*;
 import l2j.module.function.instruction.*;
 import l2j.module.types.*;
 import l2j.module.value.*;
-import l2j.module.value.ValueGetElementPtr.TypeValuePair;
 
 /**
  * LLVM parser
@@ -893,6 +892,8 @@ public class Parser {
 					t = l.lex();
 
 					parseFunctionHeader(t, f, true);
+					
+					f.finalize();
 
 					// Add the function to our list.
 					m.functions.put(f.name, f);
@@ -904,6 +905,8 @@ public class Parser {
 
 					parseFunctionHeader(t, f, false);
 
+					f.finalize();
+					
 					// Add the function to our list.
 					m.functions.put(f.name, f);
 					break;

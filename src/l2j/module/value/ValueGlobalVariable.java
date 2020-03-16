@@ -13,4 +13,7 @@ public class ValueGlobalVariable extends Value {
 		return "@" + name;
 	}
 
+	public char getJavaSignatureType() {
+		return 'I';
+	}
 }

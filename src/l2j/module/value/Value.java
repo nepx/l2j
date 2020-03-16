@@ -12,4 +12,6 @@ public abstract class Value {
 	}
 	
 	public abstract String toString();
+	
+	public abstract char getJavaSignatureType();
 }

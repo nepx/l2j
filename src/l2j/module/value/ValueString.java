@@ -12,4 +12,8 @@ public class ValueString extends Value {
 	public String toString() {
 		return value.data;
 	}
+
+	public char getJavaSignatureType() {
+		return 'I';
+	}
 }

@@ -15,7 +15,23 @@ public abstract class Callable {
 
 	public String name;
 	public ArrayList<Parameter> parameters = new ArrayList<Parameter>();
-	
+
 	// The function attributes themselves
 	public ArrayList<Attribute> attributess = new ArrayList<Attribute>();
+
+	public String methodSignature;
+
+	public String getMethodSignature() {
+		return methodSignature;
+	}
+
+	public void finalize() {
+		StringBuilder s = new StringBuilder();
+		int len = parameters.size();
+		for (int i = 0; i < len; i++)
+			s.append(parameters.get(i).type.getJavaSignatureType());
+		s.append("(");
+		s.append(returnType.getJavaSignatureType());
+		s.append(")");
+	}
 }

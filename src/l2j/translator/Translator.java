@@ -193,12 +193,11 @@ public class Translator {
 							pkgpath = "l2j/generated/";
 						}
 						int size = call.args.size();
-						StringBuilder s=new StringBuilder();
 						for (int j = 0; j < size; j++) {
-							Value argv=call.args.get(i);
+							Value argv = call.args.get(i);
 							loadValue(cf, argv);
 						}
-						cf.invokeStatic(pkgpath + "/" + name.substring(1) + "(I)V");
+						cf.invokeStatic(String.format("%s/%s%s", pkgpath, name.substring(1), c.getMethodSignature()));
 						System.out.println(pkgpath);
 					}
 					System.out.println(t);

@@ -35,8 +35,7 @@ public class ValueGetElementPtr extends Value {
 		return b.toString();
 	}
 
-	public static class TypeValuePair {
-		public Type type;
-		public Value value;
+	public char getJavaSignatureType() {
+		return 'I';
 	}
 }

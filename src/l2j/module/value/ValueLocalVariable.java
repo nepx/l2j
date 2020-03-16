@@ -22,4 +22,8 @@ public class ValueLocalVariable extends Value {
 	public String toString() {
 		return "%" + this.name;
 	}
+
+	public char getJavaSignatureType() {
+		return 'I';
+	}
 }
