@@ -17,4 +17,8 @@ public class GlobalValueVector {
 		value = v;
 		this.inrange = inrange;
 	}
+	
+	public String toString() {
+		return String.format("%s %s", type.toString(), value.toString());
+	}
 }

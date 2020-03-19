@@ -53,6 +53,10 @@ public class Translator {
 		case LocalVariable:
 			cf.loadIntFromVariable(((ValueLocalVariable) v).getID());
 			break;
+		case GetElementPtr:{
+			ValueGetElementPtr val = (ValueGetElementPtr)v;
+			System.out.println(val);
+		}
 		default:
 			throw new UnsupportedOperationException("TODO: load value: " + v.type);
 		}

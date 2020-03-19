@@ -14,4 +14,6 @@ public abstract class Type {
 	public boolean equals(Type t) {
 		return this.type == t.type;
 	}
+	
+	public static final IntegerType I8 = new IntegerType(8);
 }
