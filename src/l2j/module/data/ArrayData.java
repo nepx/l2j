@@ -30,7 +30,11 @@ public class ArrayData extends DataSectionEntry {
 		if (data != null) {
 			System.arraycopy(data, 0, output, offset, data.length);
 		} else {
-			// TODO
+			int size = type.getSize();
+			for (int i = 0; i < values.length; i++) {
+				values[i].write(output, offset);
+				offset += size;
+			}
 		}
 	}
 

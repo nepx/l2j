@@ -14,6 +14,7 @@ import l2j.parser.Parser;
 import l2j.runtime.DynamicMethodLoader;
 import l2j.runtime.FunctionImpl;
 import l2j.translator.ClassFileCompiler;
+import l2j.translator.DataSectionEmitter;
 import l2j.translator.Translator;
 
 public class Main {
@@ -45,6 +46,12 @@ public class Main {
 		Module m = new Module();
 		System.out.println("Lexing and parsing...");
 		p.parse(m);
+		
+		System.out.println("Generating data section...");
+		DataSectionEmitter dse = new DataSectionEmitter(m);
+		byte[] dataSection = new byte[dse.precalcBufferSize()];
+		dse.generate(dataSection);
+		dse.writeFile("data.bin", dataSection);
 
 		String basename = "bin/";
 
