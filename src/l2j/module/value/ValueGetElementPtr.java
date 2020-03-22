@@ -38,4 +38,8 @@ public class ValueGetElementPtr extends Value {
 	public char getJavaSignatureType() {
 		return 'I';
 	}
+
+	public void write(byte[] out, int pos) {
+		throw new IllegalStateException("getelementptr does not go in the data section!");
+	}
 }

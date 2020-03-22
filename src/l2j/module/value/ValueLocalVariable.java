@@ -26,4 +26,8 @@ public class ValueLocalVariable extends Value {
 	public char getJavaSignatureType() {
 		return 'I';
 	}
+
+	public void write(byte[] out, int pos) {
+		throw new IllegalStateException("todo");
+	}
 }

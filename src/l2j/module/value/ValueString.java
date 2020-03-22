@@ -16,4 +16,8 @@ public class ValueString extends Value {
 	public char getJavaSignatureType() {
 		return 'I';
 	}
+	
+	public void write(byte[] out, int pos) {
+		throw new IllegalStateException("todo");
+	}
 }

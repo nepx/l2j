@@ -14,4 +14,6 @@ public abstract class Value {
 	public abstract String toString();
 	
 	public abstract char getJavaSignatureType();
+	
+	public abstract void write(byte[] out, int pos);
 }
