@@ -171,6 +171,7 @@ public class Lexer {
 	 * @return
 	 */
 	private Token lexString(char current) {
+		start(-1);
 		do {
 			current = next();
 		} while (current != '"');
