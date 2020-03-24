@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.omg.CORBA_2_3.portable.OutputStream;
 
+import l2j.module.GlobalVariable;
 import l2j.module.Module;
 import l2j.module.data.DataSectionEntry;
 import l2j.runtime.Memory;
@@ -17,10 +18,10 @@ public class DataSectionEmitter {
 	public DataSectionEmitter(Module m) {
 		this.m = m;
 
-		entries = new DataSectionEntry[m.data.size()];
+		entries = new DataSectionEntry[m.globals.size()];
 		int i = 0;
-		for (Map.Entry<String, DataSectionEntry> entry : m.data.entrySet())
-			entries[i++] = entry.getValue();
+		for (Map.Entry<String, GlobalVariable> entry : m.globals.entrySet())
+			entries[i++] = entry.getValue().getDataSectionEntry();
 	}
 
 	/**

@@ -824,6 +824,8 @@ public class Parser {
 					t = l.lex();
 				break;
 			case GlobalVariable: {
+				String name = t.toString().substring(1);
+				
 				mustBe(l.lex(), TokenType.Equal);
 				t = l.lex();
 				GlobalVariable g = new GlobalVariable();
@@ -861,6 +863,12 @@ public class Parser {
 						break;
 					t = l.lex();
 				}
+				
+				g.type = typ;
+				g.initializerValue = v;
+				g.align = align;
+				m.globals.put(name, g);
+				
 				l.unlex();
 				break;
 			}

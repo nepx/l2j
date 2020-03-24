@@ -16,5 +16,5 @@ public class Module {
 	public HashMap<String, Callable> functions = new HashMap<String, Callable>();
 	public HashMap<Integer, AttributeList> attributes = new HashMap<Integer, AttributeList>();
 	
-	public HashMap<String, DataSectionEntry> data = new HashMap<String, DataSectionEntry>();
+	public HashMap<String, GlobalVariable> globals = new HashMap<String, GlobalVariable>();
 }
