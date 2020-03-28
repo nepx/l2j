@@ -13,6 +13,7 @@ public class ValueLocalVariable extends Value {
 		this.backingVar = f.lvars.get(name);
 		if (this.backingVar == null)
 			throw new IllegalStateException("Referencing a variable (" + name + ") that doesn't exist!!");
+		this.backingVar.usageCount++;
 	}
 	
 	public int getID() {

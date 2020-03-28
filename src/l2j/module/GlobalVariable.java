@@ -9,6 +9,7 @@ public class GlobalVariable {
 	public Linkage visibility = new Linkage();
 	public Type type;
 	public Value initializerValue;
+	public int addr;
 	
 	public int align;
 

@@ -26,7 +26,7 @@ public class ClassFileEmitter {
 		if (dest.indexOf(name) == -1)
 			throw new IllegalStateException("Bad class name");
 	}
-	
+
 	public String getFullClassName() {
 		return className;
 	}
@@ -43,6 +43,20 @@ public class ClassFileEmitter {
 		lines.append(" ");
 		lines.append(spec);
 		lines.append("\n.limit stack 10\n");
+	}
+
+	/**
+	 * Emit an imul instruction
+	 */
+	public void emitImul() {
+		lines.append("imul\n");
+	}
+
+	/**
+	 * Emit an iadd instruction
+	 */
+	public void emitIadd() {
+		lines.append("iadd\n");
 	}
 
 	/**
@@ -84,9 +98,10 @@ public class ClassFileEmitter {
 		lines.append(methodSignature);
 		lines.append("\n");
 	}
-	
+
 	/**
 	 * Push an integer constant to stack
+	 * 
 	 * @param x
 	 */
 	public void pushInt(int x) {
@@ -103,27 +118,28 @@ public class ClassFileEmitter {
 			lines.append("\n");
 		}
 	}
-	
+
 	/**
 	 * Pop an integer off the stack and store it in a local variable
+	 * 
 	 * @param varid
 	 */
 	public void storeIntToVariable(int varid) {
-		if(varid <= 3) {
+		if (varid <= 3) {
 			lines.append("istore_");
 			lines.append(varid);
-		}else {
+		} else {
 			lines.append("istore ");
 			lines.append(varid);
 		}
 		lines.append("\n");
 	}
-	
+
 	public void loadIntFromVariable(int varid) {
-		if(varid <= 3) {
+		if (varid <= 3) {
 			lines.append("iload_");
 			lines.append(varid);
-		}else {
+		} else {
 			lines.append("iload ");
 			lines.append(varid);
 		}
@@ -137,30 +153,36 @@ public class ClassFileEmitter {
 	public void returnInteger() {
 		lines.append("ireturn\n");
 	}
+
 	public void returnVoid() {
 		lines.append("return\n");
 	}
-	
+
 	public void write() {
 		try {
 			System.out.println(dest);
 			PrintWriter out = new PrintWriter(dest);
 			out.print(lines.toString());
 			out.close();
-		}catch(IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			throw new IllegalStateException("could not write to file");
 		}
 	}
-	
+
 	private String superclass;
-	
+
 	public void setExtends(String name) {
 		lines.append(".super ");
 		lines.append(name);
 		lines.append("\n");
 		superclass = name;
 	}
+	
+	public void comment(String text) {
+		lines.append("; " + text + "\n");
+	}
+
 	public void generateDefaultConstructor() {
 		lines.append(".method public <init>()V\naload_0\ninvokespecial ");
 		lines.append(superclass);

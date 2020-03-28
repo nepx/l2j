@@ -14,14 +14,18 @@ import l2j.runtime.Memory;
 public class DataSectionEmitter {
 	private Module m;
 	private DataSectionEntry[] entries;
+	private GlobalVariable[] globals;
 
 	public DataSectionEmitter(Module m) {
 		this.m = m;
 
 		entries = new DataSectionEntry[m.globals.size()];
+		globals = new GlobalVariable[entries.length];
 		int i = 0;
-		for (Map.Entry<String, GlobalVariable> entry : m.globals.entrySet())
-			entries[i++] = entry.getValue().getDataSectionEntry();
+		for (Map.Entry<String, GlobalVariable> entry : m.globals.entrySet()) {
+			entries[i] = entry.getValue().getDataSectionEntry();
+			globals[i++] = entry.getValue();
+		}
 	}
 
 	/**
@@ -45,7 +49,8 @@ public class DataSectionEmitter {
 		int ptr = 0, ptrbias = Memory.STATIC_MEMORY_BASE;
 		for (int i = 0; i < entries.length; i++) {
 			entries[i].outputBytes(dest, ptr);
-			entries[i].addr = ptr + ptrbias;
+			System.out.println("here: " + entries[i]);
+			globals[i].addr = entries[i].addr = ptr + ptrbias;
 			ptr += entries[i].size();
 		}
 

@@ -45,7 +45,7 @@ public class Translator {
 	 * @param cf
 	 * @param v
 	 */
-	private void loadValue(ClassFileEmitter cf, Value v) {
+	void loadValue(ClassFileEmitter cf, Value v) {
 		switch (v.type) {
 		case Constant:
 			cf.pushInt(((ValueConstant) v).value);
@@ -53,9 +53,60 @@ public class Translator {
 		case LocalVariable:
 			cf.loadIntFromVariable(((ValueLocalVariable) v).getID());
 			break;
-		case GetElementPtr:{
-			ValueGetElementPtr val = (ValueGetElementPtr)v;
+		case GetElementPtr: {
+			// XXX -- we assume that variable indexes will only occur in array types. This may not always the case. 
+			ValueGetElementPtr val = (ValueGetElementPtr) v;
+			Type t = val.type;
 			System.out.println(val);
+			int i = 1, listlen = val.list.size();
+			
+			// Really nasty.
+			cf.comment("getelementptr");
+			ArithmeticExpressionEmitter aee = new ArithmeticExpressionEmitter(listlen + 1);
+			// Add in base address
+			{
+				GlobalValueVector gvv = val.list.get(0);
+				Value v1 = gvv.value;
+				Type t1 = gvv.type;
+				aee.addMultiplicationPair(v1.getAddress(), null);
+				
+				gvv = val.list.get(1);
+				if(gvv.value.type == ValueType.Constant) {
+					ValueConstant vc = (ValueConstant)gvv.value;
+					aee.addMultiplicationPair(vc.value * t1.getSize(), null);
+				}else {
+					aee.addMultiplicationPair(t1.getSize(), gvv.value);
+				}
+			}
+			for (; i < listlen; i++) {
+				GlobalValueVector gvv = val.list.get(i);
+				// TODO: honor type in global value vector
+
+				//if (!t.canGEP())
+				//	throw new IllegalStateException("getelementptr indexed val is not array or struct: " + t);
+				
+				
+				Value gvv_v = gvv.value;
+				if (gvv_v.type != ValueType.Constant && gvv_v.type != ValueType.LocalVariable)
+					throw new IllegalStateException("bad values for getelementptr");
+				if (gvv_v.type == ValueType.Constant) {
+					ValueConstant vc = (ValueConstant) gvv_v;
+					aee.addMultiplicationPair(t.getSize() * vc.value, null);
+					if(t instanceof ArrayOrStructType) {
+						ArrayOrStructType aost = (ArrayOrStructType)t;
+					t = aost.getElementAtIndex(vc.value);
+					}
+				}else {
+					// XXX -- the assumption is made here that sizeof(struct[0]) == sizeof(struct[v])
+					aee.addMultiplicationPair(t.getSize(), gvv_v);
+					if(t instanceof ArrayOrStructType) {
+						ArrayOrStructType aost = (ArrayOrStructType)t;
+					t = aost.getElementAtIndex(0);
+					}
+				}
+			}
+			aee.emit(cf, this);
+			break;
 		}
 		default:
 			throw new UnsupportedOperationException("TODO: load value: " + v.type);

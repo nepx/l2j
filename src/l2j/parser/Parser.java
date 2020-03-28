@@ -24,6 +24,7 @@ import l2j.module.value.*;
  */
 public class Parser {
 	private Lexer l;
+	private Module module;
 
 	public Parser(Lexer l) {
 		this.l = l;
@@ -369,8 +370,11 @@ public class Parser {
 		switch (t.type) {
 		case IntegerConstant:
 			return new ValueConstant(getInteger(t));
-		case GlobalVariable:
-			return new ValueGlobalVariable(((TokenGlobalVariable) t).name);
+		case GlobalVariable: {
+			System.out.println(f + " HERE");
+			String name = ((TokenGlobalVariable) t).name;
+			return new ValueGlobalVariable(name, module.globals.get(name));
+		}
 		case LocalVariable:
 			if (f == null)
 				throw new IllegalStateException("what's a local variable doing here??");
@@ -808,6 +812,7 @@ public class Parser {
 	}
 
 	public void parse(Module m) {
+		module = m;
 		out: while (true) {
 			Token t = l.lex();
 			switch (t.type) {

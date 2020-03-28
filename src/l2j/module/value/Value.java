@@ -16,4 +16,8 @@ public abstract class Value {
 	public abstract char getJavaSignatureType();
 	
 	public abstract void write(byte[] out, int pos);
+	
+	public int getAddress() {
+		throw new IllegalStateException("cannot get addr of " + type);
+	}
 }

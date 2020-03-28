@@ -2,7 +2,7 @@ package l2j.module.function;
 
 public class LocalVariable extends Variable {
 	// Local variable
-	public int lvarid;
+	public int lvarid, usageCount;
 	public String name;
 	
 	public LocalVariable(String name, Function f) {
