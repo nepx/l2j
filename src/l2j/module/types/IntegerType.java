@@ -23,4 +23,9 @@ public class IntegerType extends Type {
 	public int getSize() {
 		return getPreferredAlignment();
 	}
+
+	protected boolean internalCompare(Type t) {
+		IntegerType i = (IntegerType)t;
+		return i.width != width;
+	}
 }

@@ -56,7 +56,7 @@ public class Translator {
 		case GetElementPtr: {
 			// XXX -- we assume that variable indexes will only occur in array types. This may not always the case. 
 			ValueGetElementPtr val = (ValueGetElementPtr) v;
-			Type t = val.type;
+			Type t = val.llvmType;
 			System.out.println(val);
 			int i = 1, listlen = val.list.size();
 			
@@ -222,7 +222,7 @@ public class Translator {
 					procExitHandler(cf, totalBytesAllocated);
 
 					InstructionRet ir = (InstructionRet) insn;
-					loadValue(cf, ir.value);
+					loadValue(cf, ir.operands[0]);
 					cf.returnInteger();
 					break;
 				}

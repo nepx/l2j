@@ -42,4 +42,11 @@ public class ArrayType extends ArrayOrStructType {
 			System.err.printf("Reading too many bytes: arg=%d count=%d\n", x, count);
 		return x * elts.getSize();
 	}
+
+	protected boolean internalCompare(Type t) {
+		ArrayType a = (ArrayType) t;
+		if (a.count != count || !a.type.equals(t))
+			return false;
+		return true;
+	}
 }

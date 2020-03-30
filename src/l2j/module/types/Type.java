@@ -14,6 +14,8 @@ public abstract class Type {
 	public abstract char getJavaSignatureType();
 
 	public abstract int getSize();
+	
+	protected abstract boolean internalCompare(Type t);
 
 	/**
 	 * Can we use the <code>getelementptr</code> instruction?
@@ -25,7 +27,7 @@ public abstract class Type {
 	}
 
 	public boolean equals(Type t) {
-		return this.type == t.type;
+		return this.type == t.type && internalCompare(t);
 	}
 
 	public static final IntegerType I8 = new IntegerType(8);

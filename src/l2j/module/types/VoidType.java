@@ -20,4 +20,8 @@ public class VoidType extends Type{
 	public int getSize() {
 		return 0;
 	}
+	
+	protected boolean internalCompare(Type t) {
+		return true;
+	}
 }
