@@ -1,6 +1,6 @@
 package l2j.module.function.instruction;
 
-import l2j.module.function.Variable;
+import l2j.module.function.LocalVariable;
 import l2j.module.types.Type;
 
 public abstract class Instruction {
@@ -12,7 +12,11 @@ public abstract class Instruction {
 	/**
 	 * The destination of the operation (where does the result go?)
 	 */
-	public Variable destination;
+	public LocalVariable destination;
+	/**
+	 * Instead of allocating a local variable, can we keep this on the stack?
+	 */
+	public boolean stackable;
 	
 	public abstract String toString();
 	public abstract boolean isTerminator();

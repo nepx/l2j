@@ -1,9 +1,12 @@
 package l2j.module.function;
 
+import l2j.module.types.Type;
+
 public class LocalVariable extends Variable {
 	// Local variable
 	public int lvarid, usageCount;
 	public String name;
+	public Type type;
 	
 	public LocalVariable(String name, Function f) {
 		super(false);

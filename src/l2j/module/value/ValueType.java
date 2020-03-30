@@ -5,5 +5,6 @@ public enum ValueType {
 	LocalVariable,
 	String,
 	GlobalVariable,
-	GetElementPtr
+	GetElementPtr,
+	Instruction
 }

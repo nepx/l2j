@@ -595,13 +595,13 @@ public class Parser {
 	private Instruction parseInstruction(Token t, Function f) {
 		// Check if it's an assignment
 		String destination = null;
-		Variable dest = null;
+		LocalVariable dest = null;
 		if (t.type == TokenType.LocalVariable) {
 			destination = ((TokenLocalVariable) t).name;
 			mustBe(l.lex(), TokenType.Equal);
 			t = l.lex();
 			dest = new LocalVariable(destination, f);
-			f.lvars.put(destination, (LocalVariable) dest);
+			f.lvars.put(destination, dest);
 		}
 		if (is(t, TokenType.Keyword)) // For "tail call"
 			t = l.lex();
