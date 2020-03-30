@@ -7,13 +7,12 @@ import l2j.module.types.Type;
 public class ValueGetElementPtr extends Value {
 
 	public boolean inbounds;
-	public Type type;
 	public ArrayList<GlobalValueVector> list;
 
 	public ValueGetElementPtr(boolean inbounds, Type type, ArrayList<GlobalValueVector> list) {
 		super(ValueType.GetElementPtr);
 		this.inbounds = inbounds;
-		this.type = type;
+		this.llvmType = type;
 		this.list = list;
 	}
 

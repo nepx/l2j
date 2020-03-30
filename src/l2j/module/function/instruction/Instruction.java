@@ -2,9 +2,11 @@ package l2j.module.function.instruction;
 
 import l2j.module.function.LocalVariable;
 import l2j.module.types.Type;
+import l2j.module.value.Value;
 
 public abstract class Instruction {
 	public InstructionType type;
+	public Value[] operands;
 	public Instruction(InstructionType type) {
 		this.type = type;
 	}

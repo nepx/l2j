@@ -1,7 +1,10 @@
 package l2j.module.value;
 
+import l2j.module.types.Type;
+
 public abstract class Value {
 	public ValueType type;
+	public Type llvmType;
 	public Value(ValueType v) {
 		this.type = v;
 	}

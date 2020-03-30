@@ -1,6 +1,7 @@
 package l2j.module.value;
 
 import l2j.module.GlobalVariable;
+import l2j.module.types.Type;
 
 public class ValueGlobalVariable extends Value {
 	
@@ -10,6 +11,7 @@ public class ValueGlobalVariable extends Value {
 		super(ValueType.GlobalVariable);
 		name = s;
 		global = gv;
+		llvmType=gv.type;
 	}
 
 	@Override

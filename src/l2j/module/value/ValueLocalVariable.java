@@ -14,6 +14,7 @@ public class ValueLocalVariable extends Value {
 		if (this.backingVar == null)
 			throw new IllegalStateException("Referencing a variable (" + name + ") that doesn't exist!!");
 		this.backingVar.usageCount++;
+		this.llvmType = backingVar.type;
 	}
 	
 	public int getID() {

@@ -8,6 +8,8 @@ public class ValueInstructionValue extends Value {
 	public ValueInstructionValue(Instruction i) {
 		super(ValueType.Instruction);
 		this.i = i;
+		
+		llvmType = i.resultType();
 	}
 
 	@Override

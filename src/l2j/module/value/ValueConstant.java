@@ -1,11 +1,14 @@
 package l2j.module.value;
 
+import l2j.module.types.Type;
+
 public class ValueConstant extends Value {
 	public int value;
 
 	public ValueConstant(int value) {
 		super(ValueType.Constant);
 		this.value = value;
+		this.llvmType = Type.I32;
 	}
 
 	public String toString() {
