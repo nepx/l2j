@@ -4,14 +4,16 @@ import l2j.module.GlobalVariable;
 import l2j.module.types.Type;
 
 public class ValueGlobalVariable extends Value {
-	
+
 	public String name;
 	public GlobalVariable global;
+
 	public ValueGlobalVariable(String s, GlobalVariable gv) {
 		super(ValueType.GlobalVariable);
 		name = s;
 		global = gv;
-		llvmType=gv.type;
+		if (gv != null) // This can happen with functions
+			llvmType = gv.type;
 	}
 
 	@Override
@@ -22,7 +24,7 @@ public class ValueGlobalVariable extends Value {
 	public char getJavaSignatureType() {
 		return 'I';
 	}
-	
+
 	public void write(byte[] out, int pos) {
 		throw new IllegalStateException("todo");
 	}

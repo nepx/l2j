@@ -371,8 +371,8 @@ public class Parser {
 		case IntegerConstant:
 			return new ValueConstant(getInteger(t));
 		case GlobalVariable: {
-			System.out.println(f + " HERE");
 			String name = ((TokenGlobalVariable) t).name;
+			System.out.println(name);
 			return new ValueGlobalVariable(name, module.globals.get(name));
 		}
 		case LocalVariable:
@@ -651,7 +651,8 @@ public class Parser {
 				t = l.lex();
 
 			Type type = parseType(t), numElementsType = null;
-			int numElements = 0, align = 0, addrspace = 0;
+			int align = 0, addrspace = 0;
+			Value numElements;
 
 			if (type == null)
 				throw new IllegalStateException("Expected type after alloca");
@@ -664,7 +665,7 @@ public class Parser {
 				t = l.lex();
 				if ((numElementsType = parseType(t)) != null) {
 					// Option 1
-					numElements = getInteger(l.lex());
+					numElements = parseValue(null, f);
 					t = l.lex();
 					continue;
 				} else {

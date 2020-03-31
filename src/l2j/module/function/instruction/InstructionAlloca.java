@@ -1,6 +1,7 @@
 package l2j.module.function.instruction;
 
 import l2j.module.types.*;
+import l2j.module.value.Value;
 
 public class InstructionAlloca extends Instruction {
 	public boolean inalloca;
@@ -11,9 +12,10 @@ public class InstructionAlloca extends Instruction {
 	public int align;
 	public int addrspace;
 
-	public InstructionAlloca(boolean inalloca, Type type, Type numElementsType, int numElements, int align,
+	public InstructionAlloca(boolean inalloca, Type type, Type numElementsType, Value numElements, int align,
 			int addrspace) {
-		super(InstructionType.Alloca);
+		super(InstructionType.Alloca, 1);
+		operands[0] = numElements;
 		this.inalloca = inalloca;
 		this.type = type;
 		if (numElementsType == null) {
