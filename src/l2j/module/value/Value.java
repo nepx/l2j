@@ -23,4 +23,6 @@ public abstract class Value {
 	public int getAddress() {
 		throw new IllegalStateException("cannot get addr of " + type);
 	}
+	
+	public static final Value CONST_1 = new ValueConstant(1);
 }

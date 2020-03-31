@@ -8,26 +8,28 @@ public class InstructionAlloca extends Instruction {
 	public Type type;
 	public Type numElementsType;
 	private boolean numElementsDefault, alignDefault, addrspaceDefault;
-	public int numElements;
 	public int align;
 	public int addrspace;
+	
+	public static final int IDX_NELTS =0 ;
 
 	public InstructionAlloca(boolean inalloca, Type type, Type numElementsType, Value numElements, int align,
 			int addrspace) {
 		super(InstructionType.Alloca, 1);
-		operands[0] = numElements;
+		operands[IDX_NELTS] = numElements;
 		this.inalloca = inalloca;
 		this.type = type;
 		if (numElementsType == null) {
 			this.numElementsType = new IntegerType(32);
 			this.numElementsDefault = true;
 		}
+		if(numElements == null) 
+			operands[IDX_NELTS] = Value.CONST_1;
 		if (align == 0 || align >= (1 << 29)) {
 			this.alignDefault = true;
 			this.align = type.getPreferredAlignment();
 		} else
 			this.align = align;
-		this.numElements = numElements < 1 ? 1 : numElements;
 		this.addrspace = addrspace;
 		this.addrspaceDefault = addrspace == 0;
 	}
@@ -44,7 +46,7 @@ public class InstructionAlloca extends Instruction {
 			x.append(", ");
 			x.append(this.numElementsType.toString());
 			x.append(" ");
-			x.append(this.numElements);
+			x.append(this.operands[IDX_NELTS]);
 		}
 		if (!this.alignDefault) {
 			x.append(", align ");

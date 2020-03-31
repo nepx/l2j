@@ -652,7 +652,7 @@ public class Parser {
 
 			Type type = parseType(t), numElementsType = null;
 			int align = 0, addrspace = 0;
-			Value numElements;
+			Value numElements=null;
 
 			if (type == null)
 				throw new IllegalStateException("Expected type after alloca");

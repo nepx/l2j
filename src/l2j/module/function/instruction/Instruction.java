@@ -7,8 +7,9 @@ import l2j.module.value.Value;
 public abstract class Instruction {
 	public InstructionType type;
 	public Value[] operands;
-	public Instruction(InstructionType type) {
+	public Instruction(InstructionType type,int operandCount) {
 		this.type = type;
+		operands = new Value[operandCount];
 	}
 	
 	/**

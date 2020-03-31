@@ -5,11 +5,12 @@ import l2j.module.value.Value;
 
 public class InstructionRet extends Instruction{
 	public Type type;
+	public static final int IDX_VAL = 0;
 	public InstructionRet(Type t, Value v) {
-		super(InstructionType.Ret);
+		super(InstructionType.Ret, 1);
 		type = t;
 		
-		(operands = new Value[1])[0] = v;
+		operands[IDX_VAL] = v;
 	}
 
 	public String toString() {

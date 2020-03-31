@@ -11,11 +11,16 @@ public class InstructionCall extends Instruction {
 	public Type returnType;
 	public Value fnptrval;
 	public ArrayList<Value> args;
+	public static final int IDX_FPTR = 0;
+	public static final int IDX_ARGS = 1;
 
 	public InstructionCall(Type returnType, Value fnptrval, ArrayList<Value> args) {
-		super(InstructionType.Call);
+		super(InstructionType.Call, 1 + args.size());
+		int argsz = args.size();
+		operands[IDX_FPTR] = fnptrval;
+		for (int i = 0; i < argsz; i++)
+			operands[IDX_ARGS + i] = args.get(i);
 		this.returnType = returnType;
-		this.fnptrval = fnptrval;
 		this.args = args;
 	}
 
