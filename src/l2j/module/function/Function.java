@@ -6,11 +6,13 @@ import java.util.HashMap;
 import l2j.module.Linkage;
 import l2j.module.Module;
 import l2j.module.attributes.*;
+import l2j.module.function.instruction.Instruction;
 import l2j.module.types.Type;
 
 public class Function extends Callable{
 	// LLVM can have named basic blocks, so we must index by name
 	public HashMap<String, BasicBlock> blocks = new HashMap<String, BasicBlock>();
+	public ArrayList<Instruction> insns = new ArrayList<Instruction>();
 	public HashMap<String, LocalVariable> lvars = new HashMap<String, LocalVariable>();
 	public Module parentModule;
 

@@ -17,4 +17,8 @@ public class LocalVariable extends Variable {
 	public int getID() {
 		return lvarid;
 	}
+	
+	public boolean equals(LocalVariable v) {
+		return v.lvarid == lvarid;
+	}
 }

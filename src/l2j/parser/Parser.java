@@ -738,6 +738,7 @@ public class Parser {
 			do {
 				i = parseInstruction(t, f);
 				b.instructions.add(i);
+				f.insns.add(i);
 				t = l.lex();
 			} while (!i.isTerminator());
 			f.blocks.put(name, b);

@@ -4,10 +4,12 @@ import l2j.module.function.instruction.Instruction;
 
 public class ValueInstructionValue extends Value {
 	public Instruction i;
+	public int idx;
 
-	public ValueInstructionValue(Instruction i) {
+	public ValueInstructionValue(Instruction i, int idx) {
 		super(ValueType.Instruction);
 		this.i = i;
+		this.idx = idx;
 		
 		llvmType = i.resultType();
 	}

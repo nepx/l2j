@@ -157,6 +157,10 @@ public class ClassFileEmitter {
 	public void returnVoid() {
 		lines.append("return\n");
 	}
+	
+	public void pop(int number) {
+		lines.append(number == 1 ? "pop\n" : "pop2\n");
+	}
 
 	public void write() {
 		try {

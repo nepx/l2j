@@ -23,6 +23,7 @@ import l2j.runtime.BuiltinFunctions;
 public class Translator {
 	private Module m;
 	private String basename;
+	private ClassFileEmitter cf;
 
 	/**
 	 * LLVM module to Java bytecode translator
@@ -54,12 +55,13 @@ public class Translator {
 			cf.loadIntFromVariable(((ValueLocalVariable) v).getID());
 			break;
 		case GetElementPtr: {
-			// XXX -- we assume that variable indexes will only occur in array types. This may not always the case. 
+			// XXX -- we assume that variable indexes will only occur in array types. This
+			// may not always the case.
 			ValueGetElementPtr val = (ValueGetElementPtr) v;
 			Type t = val.llvmType;
 			System.out.println(val);
 			int i = 1, listlen = val.list.size();
-			
+
 			// Really nasty.
 			cf.comment("getelementptr");
 			ArithmeticExpressionEmitter aee = new ArithmeticExpressionEmitter(listlen + 1);
@@ -69,12 +71,12 @@ public class Translator {
 				Value v1 = gvv.value;
 				Type t1 = gvv.type;
 				aee.addMultiplicationPair(v1.getAddress(), null);
-				
+
 				gvv = val.list.get(1);
-				if(gvv.value.type == ValueType.Constant) {
-					ValueConstant vc = (ValueConstant)gvv.value;
+				if (gvv.value.type == ValueType.Constant) {
+					ValueConstant vc = (ValueConstant) gvv.value;
 					aee.addMultiplicationPair(vc.value * t1.getSize(), null);
-				}else {
+				} else {
 					aee.addMultiplicationPair(t1.getSize(), gvv.value);
 				}
 			}
@@ -82,26 +84,27 @@ public class Translator {
 				GlobalValueVector gvv = val.list.get(i);
 				// TODO: honor type in global value vector
 
-				//if (!t.canGEP())
-				//	throw new IllegalStateException("getelementptr indexed val is not array or struct: " + t);
-				
-				
+				// if (!t.canGEP())
+				// throw new IllegalStateException("getelementptr indexed val is not array or
+				// struct: " + t);
+
 				Value gvv_v = gvv.value;
 				if (gvv_v.type != ValueType.Constant && gvv_v.type != ValueType.LocalVariable)
 					throw new IllegalStateException("bad values for getelementptr");
 				if (gvv_v.type == ValueType.Constant) {
 					ValueConstant vc = (ValueConstant) gvv_v;
 					aee.addMultiplicationPair(t.getSize() * vc.value, null);
-					if(t instanceof ArrayOrStructType) {
-						ArrayOrStructType aost = (ArrayOrStructType)t;
-					t = aost.getElementAtIndex(vc.value);
+					if (t instanceof ArrayOrStructType) {
+						ArrayOrStructType aost = (ArrayOrStructType) t;
+						t = aost.getElementAtIndex(vc.value);
 					}
-				}else {
-					// XXX -- the assumption is made here that sizeof(struct[0]) == sizeof(struct[v])
+				} else {
+					// XXX -- the assumption is made here that sizeof(struct[0]) ==
+					// sizeof(struct[v])
 					aee.addMultiplicationPair(t.getSize(), gvv_v);
-					if(t instanceof ArrayOrStructType) {
-						ArrayOrStructType aost = (ArrayOrStructType)t;
-					t = aost.getElementAtIndex(0);
+					if (t instanceof ArrayOrStructType) {
+						ArrayOrStructType aost = (ArrayOrStructType) t;
+						t = aost.getElementAtIndex(0);
 					}
 				}
 			}
@@ -147,6 +150,70 @@ public class Translator {
 	}
 
 	/**
+	 * Computes a value (x * y) using as few instructions as possible
+	 * 
+	 * @param cf
+	 * @param t
+	 * @param v
+	 */
+	private void fastMultiply32(ClassFileEmitter cf, Type t, Value v) {
+		int typesize = t.getSize();
+		if (v.type == ValueType.Constant) {
+			ValueConstant vc = (ValueConstant) v;
+			cf.pushInt(vc.value * typesize);
+		} else {
+			loadValue(cf, v);
+			cf.pushInt(typesize);
+			cf.emitImul();
+		}
+	}
+
+	/**
+	 * Translate an instruction
+	 * 
+	 * @param cf
+	 * @param i
+	 * @return Number of stack elements allocated
+	 */
+	public int translateInstruction(ClassFileEmitter cf, Instruction i) {
+		switch (i.type) {
+		case Alloca: {
+			// Bytecode breakdown:
+			// 1. Push the number of bytes to allocate
+			// 2. Call the allocation function
+			// TODO: Call alloca once to get a chunk of stack, and allocate internally from
+			// there
+
+			InstructionAlloca ia = (InstructionAlloca) i;
+			fastMultiply32(cf, ia.type, ia.operands[InstructionAlloca.IDX_NELTS]);
+			cf.invokeStatic("l2j/runtime/Memory/alloca(I)I");
+			return 1;
+		}
+		case Store: {
+			// Bytecode breakdown:
+			// 1. Push value
+			// 2. Push addr
+			// 3. Call store
+			InstructionStore is = (InstructionStore) i;
+			loadValue(cf, is.operands[InstructionStore.IDX_VAL]);
+			loadValue(cf, is.operands[InstructionStore.IDX_PTR]);
+			// Inspect the type
+			int storeSize = is.pointerType.getSize();
+			cf.invokeStatic(String.format("l2j/runtime/Memory/store%d(II)V", storeSize));
+			return 0;
+		}
+		case Ret: {
+			InstructionRet ir = (InstructionRet) i;
+			loadValue(cf, ir.operands[0]);
+			cf.returnInteger();
+			return 0;
+		}
+		default:
+			throw new UnsupportedOperationException("Unknown operation: " + i.type);
+		}
+	}
+
+	/**
 	 * Translate a single function to Java bytecode
 	 */
 	public void translateFunction(Function f) {
@@ -186,38 +253,20 @@ public class Translator {
 
 			for (int i = 0; i < insnCount; i++) {
 				Instruction insn = b.instructions.get(i);
+				int res = translateInstruction(cf, insn);
+				if (res != 0) {
+					if (insn.destination == null) {
+						// If result is not used, then ignore.
+						cf.pop(res);
+					} else {
+						if (res == 1)
+							cf.storeIntToVariable(insn.destination.lvarid);
+						else
+							throw new Error("TODO: long\n");
+					}
+				}
+
 				switch (insn.type) {
-				case Alloca: {
-					// Bytecode breakdown:
-					// 1. Push the number of bytes to allocate
-					// 2. Call the allocation function
-					// 3. Store the result in a local variable
-					// TODO: Call alloca once to get a chunk of stack, and allocate internally from
-					// there
-
-					InstructionAlloca ia = (InstructionAlloca) insn;
-					int bytesToAllocate = ia.type.getSize() * ia.numElements;
-					cf.pushInt(bytesToAllocate);
-					totalBytesAllocated += bytesToAllocate;
-					cf.invokeStatic("l2j/runtime/Memory/alloca(I)I");
-					cf.storeIntToVariable(ia.destination.getID());
-
-					// If the alloca is aligned, then indicate that the current local variable is
-					// aligned, too.
-					ia.destination.alignment = ia.align;
-					break;
-				}
-				case Store: {
-					// Bytecode breakdown
-					// 1. Load requested value from stack
-					// 2. Load address to stack
-					// 2. Call a function to write to memory
-					InstructionStore is = (InstructionStore) insn;
-					loadValue(cf, is.value);
-					loadValue(cf, is.pointer);
-					cf.invokeStatic("l2j/runtime/Memory/store32(II)V");
-					break;
-				}
 				case Ret: {
 					procExitHandler(cf, totalBytesAllocated);
 

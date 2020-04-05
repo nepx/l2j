@@ -5,7 +5,7 @@ import l2j.module.function.LocalVariable;
 
 public class ValueLocalVariable extends Value {
 	public String name;
-	private LocalVariable backingVar;
+	public LocalVariable backingVar;
 
 	public ValueLocalVariable(String name, Function f) {
 		super(ValueType.LocalVariable);
