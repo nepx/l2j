@@ -113,9 +113,21 @@ public class ClassFileEmitter {
 				lines.append(x);
 			lines.append("\n");
 		} else {
-			lines.append("bipush ");
-			lines.append(x);
-			lines.append("\n");
+			if (x < 128 && x >= -128) {
+				lines.append("bipush ");
+				lines.append(x);
+				lines.append("\n");
+			} else {
+				if (x < 65536 && x >= -65536) {
+					lines.append("sipush ");
+					lines.append(x);
+					lines.append("\n");
+				} else {
+					lines.append("ldc ");
+					lines.append(x);
+					lines.append("\n");
+				}
+			}
 		}
 	}
 
@@ -157,7 +169,7 @@ public class ClassFileEmitter {
 	public void returnVoid() {
 		lines.append("return\n");
 	}
-	
+
 	public void pop(int number) {
 		lines.append(number == 1 ? "pop\n" : "pop2\n");
 	}
@@ -182,7 +194,7 @@ public class ClassFileEmitter {
 		lines.append("\n");
 		superclass = name;
 	}
-	
+
 	public void comment(String text) {
 		lines.append("; " + text + "\n");
 	}

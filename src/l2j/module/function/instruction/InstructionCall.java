@@ -9,7 +9,6 @@ import l2j.module.value.Value;
 public class InstructionCall extends Instruction {
 
 	public Type returnType;
-	public Value fnptrval;
 	public ArrayList<Value> args;
 	public static final int IDX_FPTR = 0;
 	public static final int IDX_ARGS = 1;

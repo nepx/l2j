@@ -167,6 +167,16 @@ public class Translator {
 			cf.emitImul();
 		}
 	}
+	
+	/**
+	 * Convert bytes to the number of elements required on the Java stack
+	 * @param vals
+	 * @return
+	 */
+	private int byteSizeToStack(int vals) {
+		if(vals <= 32) return 1;
+		else return 2;
+	}
 
 	/**
 	 * Translate an instruction
@@ -207,6 +217,38 @@ public class Translator {
 			loadValue(cf, ir.operands[0]);
 			cf.returnInteger();
 			return 0;
+		}
+		case Call: {
+			InstructionCall call = (InstructionCall) i;
+			Type t = call.returnType;
+			Value v = call.operands[InstructionCall.IDX_FPTR];
+			if (v.type != ValueType.GlobalVariable)
+				throw new UnsupportedOperationException("todo: fptr call");
+			else {
+				// Look up global variable entry in function list
+				// XXX -- some programs may try to call a function that isn't Callable
+				ValueGlobalVariable gv = (ValueGlobalVariable) v;
+				String name = gv.name, pkgpath;
+				Callable c = m.functions.get(gv.name);
+				if (c == null)
+					throw new IllegalStateException("function " + c + " not found");
+
+				// Check if it's an internal function that we implemented in Java
+				pkgpath = BuiltinFunctions.list.get(name);
+				if (pkgpath == null) {
+					// It's in our module
+					pkgpath = "l2j/generated/";
+				}
+				int size = call.args.size();
+				for (int j = 1; j < call.operands.length; j++) {
+					Value argv = call.operands[j];
+					loadValue(cf, argv);
+				}
+				cf.invokeStatic(String.format("%s/%s%s", pkgpath, name.substring(1), c.getMethodSignature()));
+				System.out.println(pkgpath);
+			}
+			System.out.println(t);
+			return byteSizeToStack(call.returnType.getSize());
 		}
 		default:
 			throw new UnsupportedOperationException("Unknown operation: " + i.type);
@@ -264,51 +306,6 @@ public class Translator {
 						else
 							throw new Error("TODO: long\n");
 					}
-				}
-
-				switch (insn.type) {
-				case Ret: {
-					procExitHandler(cf, totalBytesAllocated);
-
-					InstructionRet ir = (InstructionRet) insn;
-					loadValue(cf, ir.operands[0]);
-					cf.returnInteger();
-					break;
-				}
-				case Call: {
-					InstructionCall call = (InstructionCall) insn;
-					Type t = call.returnType;
-					Value v = call.fnptrval;
-					if (v.type != ValueType.GlobalVariable)
-						throw new UnsupportedOperationException("todo: fptr call");
-					else {
-						// Look up global variable entry in function list
-						// XXX -- some programs may try to call a function that isn't Callable
-						ValueGlobalVariable gv = (ValueGlobalVariable) v;
-						String name = gv.name, pkgpath;
-						Callable c = m.functions.get(gv.name);
-						if (c == null)
-							throw new IllegalStateException("function " + c + " not found");
-
-						// Check if it's an internal function that we implemented in Java
-						pkgpath = BuiltinFunctions.list.get(name);
-						if (pkgpath == null) {
-							// It's in our module
-							pkgpath = "l2j/generated/";
-						}
-						int size = call.args.size();
-						for (int j = 0; j < size; j++) {
-							Value argv = call.args.get(i);
-							loadValue(cf, argv);
-						}
-						cf.invokeStatic(String.format("%s/%s%s", pkgpath, name.substring(1), c.getMethodSignature()));
-						System.out.println(pkgpath);
-					}
-					System.out.println(t);
-					break;
-				}
-				default:
-					throw new UnsupportedOperationException("Unknown operation: " + insn.type);
 				}
 			}
 		}
