@@ -28,10 +28,11 @@ public abstract class Callable {
 	public void finalize() {
 		StringBuilder s = new StringBuilder();
 		int len = parameters.size();
+		s.append("(");
 		for (int i = 0; i < len; i++)
 			s.append(parameters.get(i).type.getJavaSignatureType());
-		s.append("(");
-		s.append(returnType.getJavaSignatureType());
 		s.append(")");
+		s.append(returnType.getJavaSignatureType());
+		methodSignature = s.toString();
 	}
 }

@@ -244,7 +244,7 @@ public class Translator {
 					Value argv = call.operands[j];
 					loadValue(cf, argv);
 				}
-				cf.invokeStatic(String.format("%s/%s%s", pkgpath, name.substring(1), c.getMethodSignature()));
+				cf.invokeStatic(String.format("%s%s%s", pkgpath, name, c.getMethodSignature()));
 				System.out.println(pkgpath);
 			}
 			System.out.println(t);
