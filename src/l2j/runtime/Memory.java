@@ -1,7 +1,8 @@
 package l2j.runtime;
 
 /**
- * Memory implementation. Handles a flat heap address space. Handles some parts of the stack. 
+ * Memory implementation. Handles a flat heap address space. Handles some parts
+ * of the stack.
  * 
  * @author jkim13
  *
@@ -10,14 +11,15 @@ public class Memory {
 	public static final int MEMORY_SIZE = 32 * 1024 * 1024;
 	public static final int STATIC_MEMORY_BASE = 256;
 	public static final int[] memory = new int[MEMORY_SIZE >> 2];
-	
+
 	/**
-	 * The stack pointer. Like x86 stacks, it grows downwards. 
+	 * The stack pointer. Like x86 stacks, it grows downwards.
 	 */
 	private static int esp = 0;
 
 	/**
-	 * Allocate some memory on the stack. 
+	 * Allocate some memory on the stack.
+	 * 
 	 * @param size
 	 * @return
 	 */
@@ -25,13 +27,19 @@ public class Memory {
 		esp -= size;
 		return esp;
 	}
+
 	/**
 	 * Deallocate some memory from stack
+	 * 
 	 * @param size
 	 * @return
 	 */
 	public static void dealloca(int size) {
 		esp += size;
+	}
+
+	public static int load8(int addr) {
+		return memory[addr >> 2] >> ((addr & 3) << 8);
 	}
 
 	/**
@@ -62,5 +70,16 @@ public class Memory {
 			local_ref[aligned_addr] = (local_ref[aligned_addr] & mask_high | data >> shift_high);
 		} else // Aligned
 			memory[addr >> 2] = data;
+	}
+
+	public static String readString(int addr) {
+		StringBuilder b = new StringBuilder();
+		while (true) {
+			int val = load8(addr++);
+			if (val == 0)
+				break;
+			b.append((char) val);
+		}
+		return b.toString();
 	}
 }

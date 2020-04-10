@@ -797,6 +797,7 @@ public class Parser {
 			}
 			if (t.type == TokenType.Comma)
 				t = l.lex();
+			f.parameters.add(param);
 		}
 
 		mustBe(t, TokenType.RParen);
