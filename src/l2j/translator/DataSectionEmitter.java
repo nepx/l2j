@@ -37,7 +37,7 @@ public class DataSectionEmitter {
 		int total = 0;
 		for (int i = 0; i < entries.length; i++)
 			total += entries[i].size();
-		return total;
+		return (total + 3) & ~3; // align to dword boundary
 	}
 
 	/**

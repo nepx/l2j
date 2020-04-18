@@ -39,7 +39,7 @@ public class Memory {
 	}
 
 	public static int load8(int addr) {
-		return memory[addr >> 2] >> ((addr & 3) << 8);
+		return memory[addr >> 2] >> ((addr & 3) << 3) & 0xFF;
 	}
 
 	/**

@@ -11,6 +11,7 @@ import l2j.lexer.Lexer;
 import l2j.module.Module;
 import l2j.module.function.*;
 import l2j.parser.Parser;
+import l2j.runtime.DataSectionLoader;
 import l2j.runtime.DynamicMethodLoader;
 import l2j.runtime.FunctionImpl;
 import l2j.translator.ClassFileCompiler;
@@ -73,10 +74,9 @@ public class Main {
 		}
 
 		// Now try running the file
-
-		DynamicMethodLoader dml = new DynamicMethodLoader("l2j.runtime.functions.");
-		FunctionImpl test = dml.loadInstance("TestFunction");
-		test.call(0);
+		
+		// Load our data file
+		DataSectionLoader.loadMemoryImage("data.bin");
 
 		DynamicMethodLoader dml2 = new DynamicMethodLoader("");
 		FunctionImpl test2 = dml2.loadInstance("l2j.generated.main");
