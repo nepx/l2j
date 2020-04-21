@@ -783,6 +783,9 @@ public class Parser {
 					case READONLY:
 						param.flags |= Parameter.READONLY;
 						break;
+					case READNONE:
+						param.flags |= Parameter.READNONE;
+						break;
 					default:
 						throw new IllegalStateException("TODO: Parse attributes [" + t + "]");
 					}

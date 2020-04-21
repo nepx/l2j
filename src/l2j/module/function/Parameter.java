@@ -13,4 +13,5 @@ public class Parameter {
 
 	public static final int NOCAPTURE = (1 << 0);
 	public static final int READONLY = (1 << 1);
+	public static final int READNONE = (1 << 2);
 }

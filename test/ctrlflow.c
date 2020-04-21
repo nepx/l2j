@@ -11,7 +11,7 @@ int main(int argc, char** argv){
 		}
 		do {
 			x += argc + 5;
-		while(x < 100);
+		} while(x < 100);
 		
 		return x;
 	}
