@@ -4,5 +4,6 @@ public enum InstructionType {
 	Alloca,
 	Store,
 	Ret,
-	Call
+	Call,
+	Icmp
 }
