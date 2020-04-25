@@ -652,7 +652,7 @@ public class Parser {
 
 			Type type = parseType(t), numElementsType = null;
 			int align = 0, addrspace = 0;
-			Value numElements=null;
+			Value numElements = null;
 
 			if (type == null)
 				throw new IllegalStateException("Expected type after alloca");
@@ -709,6 +709,14 @@ public class Parser {
 				t = l.lex();
 			}
 			insn = new InstructionCall(returnType, fnptrval, args);
+			break;
+		}
+		case ICMP: {
+			int condtype = InstructionIcmp.cond2id(l.lex());
+			Type typ = parseType(l.lex());
+			Value aval = parseValue(l.lex(), f);
+			Value bval = parseValue(l.lex(), f);
+			insn = new InstructionIcmp(condtype, typ, aval, bval);
 			break;
 		}
 		default:
@@ -836,7 +844,7 @@ public class Parser {
 				break;
 			case GlobalVariable: {
 				String name = t.toString().substring(1);
-				
+
 				mustBe(l.lex(), TokenType.Equal);
 				t = l.lex();
 				GlobalVariable g = new GlobalVariable();
@@ -874,12 +882,12 @@ public class Parser {
 						break;
 					t = l.lex();
 				}
-				
+
 				g.type = typ;
 				g.initializerValue = v;
 				g.align = align;
 				m.globals.put(name, g);
-				
+
 				l.unlex();
 				break;
 			}
@@ -911,7 +919,7 @@ public class Parser {
 					t = l.lex();
 
 					parseFunctionHeader(t, f, true);
-					
+
 					f.finalize();
 
 					// Add the function to our list.
@@ -925,7 +933,7 @@ public class Parser {
 					parseFunctionHeader(t, f, false);
 
 					f.finalize();
-					
+
 					// Add the function to our list.
 					m.functions.put(f.name, f);
 					break;

@@ -8,6 +8,10 @@ public abstract class Type {
 	}
 
 	public abstract String toString();
+	
+	public boolean isVector() {
+		return false;
+	}
 
 	public abstract int getPreferredAlignment();
 
@@ -30,6 +34,7 @@ public abstract class Type {
 		return this.type == t.type && internalCompare(t);
 	}
 
+	public static final IntegerType I1 = new IntegerType(1);
 	public static final IntegerType I8 = new IntegerType(8);
 	public static final IntegerType I32 = new IntegerType(32);
 	public static final PointerType I8P = new PointerType(I8);
