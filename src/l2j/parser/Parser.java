@@ -817,9 +817,21 @@ public class Parser {
 		t = parseOptionalUnnamedAddr(t);
 		t = parseOptionalFunctionAttributes(t, f);
 		if (parseFunctionBody) {
+			Function ff = (Function) f;
 			mustBe(t, TokenType.LBrace);
 
-			parseFunctionBody(l.lex(), (Function) f);
+			// add params as lvars
+			int paramsize = f.parameters.size();
+			for (int i = 0; i < paramsize; i++) {
+				Parameter p = f.parameters.get(i);
+				// Create the name ("%i")
+				String name = Integer.toString(i);
+				LocalVariable lvar = new LocalVariable(name, ff);
+				lvar.type = p.type;
+				ff.lvars.put(name, lvar);
+			}
+
+			parseFunctionBody(l.lex(), ff);
 		} else
 			l.unlex();
 		return t;
