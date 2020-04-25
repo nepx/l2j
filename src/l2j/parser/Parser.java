@@ -715,6 +715,7 @@ public class Parser {
 			int condtype = InstructionIcmp.cond2id(l.lex());
 			Type typ = parseType(l.lex());
 			Value aval = parseValue(l.lex(), f);
+			mustBe(l.lex(), TokenType.Comma);
 			Value bval = parseValue(l.lex(), f);
 			insn = new InstructionIcmp(condtype, typ, aval, bval);
 			break;
