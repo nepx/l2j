@@ -243,6 +243,13 @@ public class Lexer {
 		return new TokenMetadata(slice());
 	}
 
+	private Token lexLabel() {
+		prev(); // move behind ':'
+		String name = slice(); // get name of label without ':'
+		skip(); // pass by ':'
+		return new TokenLabel(name);
+	}
+
 	/**
 	 * Parse integer constant [0-9]+
 	 * 
@@ -254,6 +261,8 @@ public class Lexer {
 		while (isNumber(cur)) {
 			cur = next();
 		}
+		if (cur == ':')
+			return lexLabel();
 		prev();
 		return new TokenIntegerConstant(Integer.parseInt(slice()));
 	}
