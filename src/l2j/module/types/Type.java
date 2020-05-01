@@ -38,4 +38,5 @@ public abstract class Type {
 	public static final IntegerType I8 = new IntegerType(8);
 	public static final IntegerType I32 = new IntegerType(32);
 	public static final PointerType I8P = new PointerType(I8);
+	public static final VoidType Void = new VoidType();
 }

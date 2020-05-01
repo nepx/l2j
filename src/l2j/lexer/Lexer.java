@@ -251,8 +251,9 @@ public class Lexer {
 	private Token lexIntegerConstant() {
 		start(-1);
 		char cur = next();
-		while (isNumber(cur))
+		while (isNumber(cur)) {
 			cur = next();
+		}
 		prev();
 		return new TokenIntegerConstant(Integer.parseInt(slice()));
 	}
@@ -369,7 +370,7 @@ public class Lexer {
 						res = new TokenSymbol('.', TokenType.DotDotDot);
 						skip();
 						skip();
-					}else
+					} else
 						res = new TokenSymbol(current, symbols.get(current));
 					break out;
 				}
