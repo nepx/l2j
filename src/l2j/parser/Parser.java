@@ -40,6 +40,13 @@ public class Parser {
 			throw new IllegalStateException("Expected " + k.toString() + ", got " + t.type.toString());
 	}
 
+	private static void mustBe(Token t, NativeType k) {
+		if (t.type != TokenType.NativeType)
+			throw new IllegalStateException("Expected NativeType, got " + t.type.toString());
+		if (((TokenNativeType) t).kwe != k)
+			throw new IllegalStateException("Expected " + k.toString() + ", got " + t.type.toString());
+	}
+
 	private static void mustBe(Token t, Keyword k) {
 		if (t.type != TokenType.Keyword)
 			throw new IllegalStateException("Expected Keyword, got " + t.type.toString());
@@ -718,6 +725,30 @@ public class Parser {
 			mustBe(l.lex(), TokenType.Comma);
 			Value bval = parseValue(l.lex(), f);
 			insn = new InstructionIcmp(condtype, typ, aval, bval);
+			break;
+		}
+		case BR: {
+			t = l.lex();
+			boolean a = false;
+			Label a1 = null, a2;
+			Value v = null;
+			if (t.type == TokenType.Integer) {
+				a = true;
+				v = parseValue(null, f);
+				mustBe(l.lex(), TokenType.Comma);
+				mustBe(l.lex(), NativeType.LABEL);
+				t = l.lex();
+				mustBe(t, TokenType.LocalVariable);
+				a1 = new Label(((TokenLocalVariable) t).name, f);
+				mustBe(l.lex(), TokenType.Comma);
+				t = l.lex();
+			}
+			// skip right to ifDefault
+			mustBe(t, NativeType.LABEL);
+			t = l.lex();
+			mustBe(t, TokenType.LocalVariable);
+			a2 = new Label(((TokenLocalVariable) t).name, f);
+			insn = new InstructionBr(a, v, a1, a2);
 			break;
 		}
 		default:
