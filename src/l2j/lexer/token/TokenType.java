@@ -13,7 +13,7 @@ public enum TokenType {
 	AttributeGroup,
 	Metadata,
 	
-	Label, // TODO
+	Label,
 	
 	Comma,
 	Equal,

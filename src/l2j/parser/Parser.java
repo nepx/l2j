@@ -771,7 +771,8 @@ public class Parser {
 			String name;
 			Instruction i;
 			if (t.type == TokenType.Label) {
-				throw new UnsupportedOperationException("todo: label");
+				name = ((TokenLabel)t).labelName;
+				t=l.lex();
 			} else {
 				name = f.getTempName();
 			}
