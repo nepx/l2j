@@ -6,5 +6,6 @@ public enum InstructionType {
 	Ret,
 	Call,
 	Icmp,
-	Br
+	Br,
+	Add
 }
