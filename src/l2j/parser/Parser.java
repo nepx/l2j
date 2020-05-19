@@ -76,6 +76,11 @@ public class Parser {
 			throw new IllegalStateException("Expected string constant");
 		return ((TokenString) t).data;
 	}
+	
+	private Token eat(Token t, Keyword k) {
+		if(is(t, k)) return l.lex();
+		return t;
+	}
 
 	/**
 	 * Parse linkage type.
@@ -749,6 +754,19 @@ public class Parser {
 			mustBe(t, TokenType.LocalVariable);
 			a2 = new Label(((TokenLocalVariable) t).name, f);
 			insn = new InstructionBr(a, v, a1, a2);
+			break;
+		}
+		case ADD: {
+			boolean nsw, nuw;
+			int res = InstructionAdd.parsen_w(l);
+			nuw = (res & 1) != 0;
+			nsw = (res & 2) != 0;
+			Type type = parseType(null);
+			Value op1 = parseValue(null, f);
+			mustBe(l.lex(), TokenType.Comma);
+			t = l.lex();
+			Value op2 = parseValue(null, f);
+			insn = new InstructionAdd(nsw, nuw, type, op1, op2);
 			break;
 		}
 		default:
